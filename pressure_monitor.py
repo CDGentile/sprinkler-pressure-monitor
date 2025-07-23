@@ -3,7 +3,7 @@
 import time
 import board
 import busio
-from adafruit_ads1x15.ads1x15 import ADS1115
+from adafruit_ads1x15.ads1115 import ADS1115, P0, P1, P2, P3
 from adafruit_ads1x15.analog_in import AnalogIn
 import paho.mqtt.client as mqtt
 
@@ -19,6 +19,13 @@ ADC_VREF = 5.0  # volts
 PRESSURE_MAX = 100.0  # psi
 SENSOR_VOLTAGE_AT_MAX = 5.0  # volts
 
+channel_map = {
+    0: P0,
+    1: P1,
+    2: P2,
+    3: P3
+}
+
 def voltage_to_pressure(voltage):
     return (voltage / SENSOR_VOLTAGE_AT_MAX) * PRESSURE_MAX
 
@@ -29,11 +36,12 @@ def main():
     
     # If needed: ads.gain = 1
 
-    chan = AnalogIn(ads, getattr(ADS1115, f'P{PRESSURE_SENSOR_CHANNEL}'))
+    
+    chan = AnalogIn(ads, channel_map[PRESSURE_SENSOR_CHANNEL])
 
     # MQTT client setup
-    client = mqtt.Client()
-    client.connect(MQTT_BROKER)
+    #client = mqtt.Client()
+    #client.connect(MQTT_BROKER)
 
     try:
         while True:
@@ -43,8 +51,8 @@ def main():
                 'voltage': voltage,
                 'pressure_psi': pressure
             }
-            print(f"Pressure: {pressure:.2f} psi (Voltage: {voltage:.2f} V)")
-            client.publish(MQTT_TOPIC, str(payload))
+            print(f"Channel: {PRESSURE_SENSOR_CHANNEL} Pressure: {pressure:.2f} psi (Voltage: {voltage:.2f} V)")
+            ##client.publish(MQTT_TOPIC, str(payload))
             time.sleep(5)
     except KeyboardInterrupt:
         print("Exiting...")
