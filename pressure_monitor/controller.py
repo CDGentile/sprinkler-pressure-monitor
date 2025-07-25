@@ -58,16 +58,25 @@ class Controller:
 
     def _is_stable(self):
         """Return True if all channels have been stable within threshold"""
-        self.stable = True  # assume stable, prove otherwise
+        self.stable = True
         for ch, series in self.history.items():
             if len(series) < 2:
                 self.stable = False
                 continue
+
             values = [v for (t, v) in series]
             vmin, vmax = min(values), max(values)
-            if vmax == 0:
-                continue  # skip division by zero
-            pct_change = 100 * abs(vmax - vmin) / vmax
+
+            # Use configured max_value as denominator instead of vmax
+            try:
+                max_scale = self.config["sensor"]["channels"][str(ch)]["max_value"]
+            except KeyError:
+                max_scale = 100.0  # fallback
+
+            if max_scale == 0:
+                continue
+
+            pct_change = 100 * abs(vmax - vmin) / max_scale
             if pct_change > self.threshold_pct:
                 self.stable = False
         return self.stable

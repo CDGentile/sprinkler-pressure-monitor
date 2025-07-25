@@ -21,7 +21,7 @@ sensor:
 sampling:
   high_rate_hz: 20.0       # Use this when changes are dynamic
   low_rate_hz: 0.2         # Use this when data is stable
-  stability_threshold_pct: 1.0
+  stability_threshold_pct: 2.0
   stability_window_sec: 5
 
 mqtt:
