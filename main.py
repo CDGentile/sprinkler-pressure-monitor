@@ -1,42 +1,34 @@
-import os
+import argparse
 import sys
-import traceback
 
 from pressure_monitor.config import load_config
 from pressure_monitor.sensor import SensorManager
 from pressure_monitor.sensor_sim import SimulatedSensorManager
+from pressure_monitor.controller import Controller
 from pressure_monitor.outputs.mqtt import MqttPublisher
 from pressure_monitor.outputs.console import ConsolePublisher
-from pressure_monitor.controller import Controller
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Sprinkler Pressure Monitor")
+    parser.add_argument("--simulate-sensor", action="store_true", help="Use simulated sensor input")
+    parser.add_argument("--simulate-output", action="store_true", help="Use console output instead of MQTT")
+    return parser.parse_args()
 
 def main():
-    try:
-        print("Loading configuration...")
-        config = load_config("config.yaml")
+    args = parse_args()
+    config = load_config("config.yaml")
 
-        USE_SIMULATION = os.getenv("SIMULATE", "false").lower() == "true"
+    sim_sensor = args.simulate_sensor if args.simulate_sensor else config.get("simulation", {}).get("sensor", False)
+    sim_output = args.simulate_output if args.simulate_output else config.get("simulation", {}).get("output", False)
 
-        print("Initializing sensor manager...")
-        sensor = SimulatedSensorManager(config) if USE_SIMULATION else SensorManager(config)
+    SensorClass = SimulatedSensorManager if sim_sensor else SensorManager
+    OutputClass = ConsolePublisher if sim_output else MqttPublisher
 
-        print("Initializing output...")
-        if USE_SIMULATION:
-            output = ConsolePublisher(config)
-        else:
-            if config.get("mqtt", {}).get("enabled", False):
-                output = MqttPublisher(config)
-            else:
-                print("MQTT output disabled in config.")
-                sys.exit(1)
+    sensor_manager = SensorClass(config)
+    output = OutputClass(config)
 
-        print("Starting controller...")
-        controller = Controller(config, sensor, output)
-        controller.run()
-
-    except Exception:
-        print("\n[CRITICAL] Unhandled exception during startup:")
-        traceback.print_exc()
-        sys.exit(1)
+    controller = Controller(config, sensor_manager, output)
+    controller.run()
 
 if __name__ == "__main__":
     main()

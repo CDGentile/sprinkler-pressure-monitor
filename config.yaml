@@ -24,6 +24,10 @@ sampling:
   stability_threshold_pct: 2.0
   stability_window_sec: 5
 
+simulation:
+  sensor: true        # Use simulated sensor input (True/False)
+  output: true       # Use console instead of MQTT (True/False)
+
 mqtt:
   enabled: true
   host: 192.168.0.50
