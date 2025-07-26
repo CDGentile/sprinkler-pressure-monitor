@@ -1,101 +1,147 @@
 # Sprinkler Pressure Monitor
 
-A native Python script to read pressure sensor input via the ADS1115 ADC on an OpenSprinkler Pi system (Raspberry Pi 4) and publish measurements to an MQTT broker.  
-The system is designed to run alongside the OpenSprinkler Unified Firmware without interfering with its operation.
+A modular, test-driven Python system for monitoring water pressure via ADS1115 sensors on Raspberry Pi. Supports dynamic sampling, MQTT publishing, and simulation mode for development without hardware.
 
 ---
 
-## Features
+## 🧱 Architecture Overview
 
-- Reads analog input from a 5V 100psi pressure sensor connected to ADS1115 on OSPi v2.0.
-- Converts voltage to estimated pressure (PSI).
-- Publishes pressure readings to MQTT topic for use with Home Assistant, Grafana, or other consumers.
-- Outputs logs to console for troubleshooting.
+This system reads analog pressure sensors via the ADS1115 ADC and publishes structured payloads over MQTT. Sampling rate is dynamically throttled based on system stability to minimize data volume during steady-state operation.
 
----
-
-## Dependencies
-
-Python 3 required.
-
-### Python libraries:
-
-- `adafruit-circuitpython-ads1x15`
-- `paho-mqtt`
-
-These are listed in `requirements.txt`.
+- 🧠 **SensorManager**: Reads and calibrates pressure from configured ADC channels
+- 📦 **PayloadBuilder**: Creates timestamped, structured payloads
+- 📤 **OutputManager**: Currently supports MQTT or console
+- 🧮 **Controller**: Central loop, manages sampling, stability detection, and publishing
+- ⚙️ **Config**: YAML-driven parameters for hardware, timing, and output
+- 🧪 **Test suite**: Pytest coverage across all logic, with integration path validation
 
 ---
 
-## Installation
-
-Clone the repository:
+## 📁 File Structure
 
 ```
-git clone https://github.com/yourusername/sprinkler-pressure-monitor.git
-cd sprinkler-pressure-monitor
+sprinkler-pressure-monitor/
+├── main.py
+├── config.yaml
+├── requirements.txt
+├── pressure_monitor/
+│   ├── controller.py
+│   ├── config.py
+│   ├── sensor.py
+│   ├── sensor_sim.py
+│   ├── payload.py
+│   └── outputs/
+│       ├── mqtt.py
+│       └── console.py
+├── tests/
+│   ├── test_sensor.py
+│   ├── test_payload.py
+│   ├── test_mqtt.py
+│   ├── test_controller.py
+│   └── test_integration.py
 ```
 
-Set up a Python virtual environment:
+---
 
+## 🧪 Simulation Mode
+
+To run the system without real sensors or MQTT:
+
+```bash
+SIMULATE=true python main.py
 ```
-python3 -m venv venv
-source venv/bin/activate
+
+This uses:
+- `SimulatedSensorManager`: random but stable/dynamic values
+- `ConsolePublisher`: prints payloads to stdout
+
+---
+
+## 🧾 Example `config.yaml`
+
+```yaml
+sensor:
+  type: ads1115
+  channels:
+    0: {enabled: true,  max_voltage: 5.0, max_value: 100.0}
+    1: {enabled: false, max_voltage: 5.0, max_value: 100.0}
+    2: {enabled: false, max_voltage: 5.0, max_value: 100.0}
+    3: {enabled: false, max_voltage: 5.0, max_value: 100.0}
+
+sampling:
+  high_rate_hz: 20.0
+  low_rate_hz: 0.2
+  stability_threshold_pct: 1.0
+  stability_window_sec: 5
+
+mqtt:
+  enabled: true
+  host: your-broker.local
+  port: 1883
+  topic: home/sensors/pressure
+  qos: 1
+```
+
+---
+
+## 🧪 Testing
+
+```bash
 pip install -r requirements.txt
+pytest
 ```
 
----
-
-## Configuration
-
-By default, the script is configured for:
-
-- MQTT broker: `localhost`
-- MQTT topic: `home/sprinkler/pressure`
-- Pressure sensor: 0-100 PSI, 0-5V output range.
-- ADC channel: A0 on ADS1115.
-
-You can adjust these constants directly in `pressure_monitor.py`.
+Test coverage includes:
+- Sensor reading + calibration
+- Payload formatting
+- MQTT publishing (mocked)
+- Stability detection logic
+- Full integration path: sensor → payload → output
 
 ---
 
-## Usage
+## 🚀 Planned Features
 
-Run the script manually:
-
-```
-source venv/bin/activate
-python pressure_monitor.py
-```
-
-Pressure readings will print to the console and publish to MQTT every 5 seconds.
+- [ ] Real sensor integration via ADS1115
+- [ ] Systemd service definition
+- [ ] InfluxDB/Telegraf output (optional backend)
+- [ ] Local buffering + replay on reconnect
+- [ ] Grafana dashboard templates
+- [ ] Multi-device deployment
 
 ---
 
-## Deployment
+## 🏠 Deployment Targets
 
-When ready for persistent deployment on the Raspberry Pi:
+This system supports multiple Raspberry Pi devices, each with its own `config.yaml`. Examples include:
 
-1. Clone this repository to the Pi  
-2. Install dependencies using a virtual environment  
-3. Run as a background service using `systemd` (sample unit file can be provided later) for auto-start on boot.
-
----
-
-## Future improvements
-
-- Docker containerization (optional for future isolation).
-- Retry/backoff behavior on MQTT disconnect.
-- Enhanced sensor calibration logic.
+- Main house pressure monitoring
+- Well pump and irrigation system sensors
+- Shop and remote locations
 
 ---
 
-## License
+## 📡 Monitoring Stack
 
-MIT License — free to use, modify, and distribute.
+This system integrates with a local MQTT + InfluxDB + Grafana stack, optionally including:
+
+- **Mosquitto** (MQTT broker)
+- **InfluxDB v2** (time series storage)
+- **Grafana** (dashboard interface)
+- **Home Assistant** (automation and visibility)
 
 ---
 
-## Notes
+## 🧠 Developer Notes
 
-The OpenSprinkler Unified Firmware does **not currently use the ADS1115 ADCs** on OSPi v2.0, so this script is safe to run concurrently without conflict as long as I2C bus access is correctly managed.
+- Designed for resilience and testability
+- Simulation allows full dev/test cycle without hardware access
+- YAML-driven config enables reuse across devices
+- Supports both stdout and MQTT output
+- Easily extensible with other outputs (e.g., InfluxDB)
+
+---
+
+## 📜 License
+
+MIT License — free to use, adapt, and build upon.
