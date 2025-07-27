@@ -45,15 +45,13 @@ sprinkler-pressure-monitor/
 
 ## 🧪 Simulation Mode
 
-To run the system without real sensors or MQTT:
+Simulation mode can be enabled or customized via CLI overrides:
 
-```bash
-SIMULATE=true python main.py
-```
+- `--simulate-sensor`: Use simulated sensor input instead of real hardware.
+- `--simulate-output`: Use console output instead of MQTT publishing.
+- `--site`: Select the site configuration to load.
 
-This uses:
-- `SimulatedSensorManager`: random but stable/dynamic values
-- `ConsolePublisher`: prints payloads to stdout
+If these flags are not provided, the system defaults to the settings specified in `config.yaml` under the `simulation` section. For example, by default, both sensor simulation and console output can be enabled or disabled according to the config.
 
 ---
 
@@ -64,20 +62,33 @@ site: main_site
 
 sites:
   main_site:
-    channels:
-      0: {enabled: true, name: house_branch, max_voltage: 5.0, max_value: 100.0}
+    sensor:
+      type: ads1115
+      channels:
+        0:
+          enabled: true
+          name: house_branch
+          max_voltage: 5.0
+          max_value: 100.0
+
   aux_site:
-    channels:
-      0: {enabled: true,  name: main_well,         max_voltage: 5.0, max_value: 100.0}
-      1: {enabled: true,  name: shop_well,         max_voltage: 5.0, max_value: 100.0}
-      2: {enabled: true,  name: irrigation_branch, max_voltage: 5.0, max_value: 100.0}
-      3: {enabled: true,  name: runway_well,       max_voltage: 5.0, max_value: 100.0}
+    sensor:
+      type: ads1115
+      channels:
+        0: { enabled: true, name: main_well,         max_voltage: 5.0, max_value: 100.0 }
+        1: { enabled: true, name: shop_well,         max_voltage: 5.0, max_value: 100.0 }
+        2: { enabled: true, name: irrigation_branch, max_voltage: 5.0, max_value: 100.0 }
+        3: { enabled: true, name: runway_well,       max_voltage: 5.0, max_value: 100.0 }
 
 sampling:
-  high_rate_hz: 20.0       # sampling rate during dynamic periods
-  low_rate_hz: 0.2         # sampling rate when stable
-  stability_threshold_pct: 1.0
-  stability_window_sec: 5
+  high_rate_hz: 20.0            # Sampling rate during dynamic conditions (Hz)
+  low_rate_hz: 0.2              # Sampling rate when stable (Hz)
+  stability_threshold_pct: 2.0  # Change threshold to consider data stable (%)
+  stability_window_sec: 5       # Time window to evaluate stability (sec)
+
+simulation:
+  sensor: true                  # Use simulated sensor input (True/False)
+  output: true                  # Use console instead of MQTT (True/False)
 
 mqtt:
   enabled: true
