@@ -1,32 +1,48 @@
-sensor:
-  type: ads1115
-  channels:
-    0:
-      enabled: true
-      max_voltage: 5.0
-      max_value: 100.0
-    1:
-      enabled: false
-      max_voltage: 5.0
-      max_value: 100.0
-    2:
-      enabled: false
-      max_voltage: 5.0
-      max_value: 100.0
-    3:
-      enabled: false
-      max_voltage: 5.0
-      max_value: 100.0
+sites:
+  main_site:
+    sensor:
+      type: ads1115
+      channels:
+        0:
+          enabled: true
+          name: house_branch
+          max_voltage: 5.0
+          max_value: 100.0
+
+  aux_site:
+    sensor:
+      type: ads1115
+      channels:
+        0:
+          enabled: true
+          name: main_well
+          max_voltage: 5.0
+          max_value: 100.0
+        1:
+          enabled: true
+          name: shop_well
+          max_voltage: 5.0
+          max_value: 100.0
+        2:
+          enabled: true
+          name: irrigation_branch
+          max_voltage: 5.0
+          max_value: 100.0
+        3:
+          enabled: true
+          name: runway_well
+          max_voltage: 5.0
+          max_value: 100.0
 
 sampling:
-  high_rate_hz: 20.0       # Use this when changes are dynamic
-  low_rate_hz: 0.2         # Use this when data is stable
-  stability_threshold_pct: 2.0
-  stability_window_sec: 5
+  high_rate_hz: 20.0            # Sampling rate during dynamic conditions (Hz)
+  low_rate_hz: 0.2              # Sampling rate when stable (Hz)
+  stability_threshold_pct: 2.0  # Change threshold to consider data stable (%)
+  stability_window_sec: 5       # Time window to evaluate stability (sec)
 
 simulation:
-  sensor: true        # Use simulated sensor input (True/False)
-  output: true       # Use console instead of MQTT (True/False)
+  sensor: true                  # Use simulated sensor input (True/False)
+  output: true                  # Use console instead of MQTT (True/False)
 
 mqtt:
   enabled: true

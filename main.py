@@ -12,11 +12,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Sprinkler Pressure Monitor")
     parser.add_argument("--simulate-sensor", action="store_true", help="Use simulated sensor input")
     parser.add_argument("--simulate-output", action="store_true", help="Use console output instead of MQTT")
+    parser.add_argument("--site", type=str, default="main_site", help="Select configuration site (default: main_site)")
     return parser.parse_args()
 
 def main():
     args = parse_args()
-    config = load_config("config.yaml")
+    config = load_config("config.yaml", site=args.site)
 
     sim_sensor = args.simulate_sensor if args.simulate_sensor else config.get("simulation", {}).get("sensor", False)
     sim_output = args.simulate_output if args.simulate_output else config.get("simulation", {}).get("output", False)

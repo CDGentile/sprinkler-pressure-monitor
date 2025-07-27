@@ -17,14 +17,11 @@ class SensorManager:
             voltage = self.read_adc_channel(ch)  # Placeholder
             max_voltage = self.channel_configs[ch]["max_voltage"]
             max_value = self.channel_configs[ch]["max_value"]
+            name = self.channel_configs[ch]["name"]
 
             # Normalize reading
             value = (voltage / max_voltage) * max_value
-            readings.append({
-                "channel": ch,
-                "voltage": voltage,
-                "value": value
-            })
+            readings.append((name, value))
 
         return readings
 

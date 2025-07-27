@@ -6,13 +6,13 @@ A modular, test-driven Python system for monitoring water pressure via ADS1115 s
 
 ## 🧱 Architecture Overview
 
-This system reads analog pressure sensors via the ADS1115 ADC and publishes structured payloads over MQTT. Sampling rate is dynamically throttled based on system stability to minimize data volume during steady-state operation.
+This system reads analog pressure sensors via the ADS1115 ADC and publishes structured payloads over MQTT. Sampling rate is dynamically throttled based on system stability to minimize data volume during steady-state operation. Configuration supports multiple site profiles to enable flexible deployment across different locations, with site-based config selection at runtime.
 
 - 🧠 **SensorManager**: Reads and calibrates pressure from configured ADC channels
 - 📦 **PayloadBuilder**: Creates timestamped, structured payloads
 - 📤 **OutputManager**: Currently supports MQTT or console
 - 🧮 **Controller**: Central loop, manages sampling, stability detection, and publishing
-- ⚙️ **Config**: YAML-driven parameters for hardware, timing, and output
+- ⚙️ **Config**: YAML-driven parameters for hardware, timing, output, and site selection
 - 🧪 **Test suite**: Pytest coverage across all logic, with integration path validation
 
 ---
@@ -60,17 +60,22 @@ This uses:
 ## 🧾 Example `config.yaml`
 
 ```yaml
-sensor:
-  type: ads1115
-  channels:
-    0: {enabled: true,  max_voltage: 5.0, max_value: 100.0}
-    1: {enabled: false, max_voltage: 5.0, max_value: 100.0}
-    2: {enabled: false, max_voltage: 5.0, max_value: 100.0}
-    3: {enabled: false, max_voltage: 5.0, max_value: 100.0}
+site: main_site
+
+sites:
+  main_site:
+    channels:
+      0: {enabled: true, name: house_branch, max_voltage: 5.0, max_value: 100.0}
+  aux_site:
+    channels:
+      0: {enabled: true,  name: main_well,         max_voltage: 5.0, max_value: 100.0}
+      1: {enabled: true,  name: shop_well,         max_voltage: 5.0, max_value: 100.0}
+      2: {enabled: true,  name: irrigation_branch, max_voltage: 5.0, max_value: 100.0}
+      3: {enabled: true,  name: runway_well,       max_voltage: 5.0, max_value: 100.0}
 
 sampling:
-  high_rate_hz: 20.0
-  low_rate_hz: 0.2
+  high_rate_hz: 20.0       # sampling rate during dynamic periods
+  low_rate_hz: 0.2         # sampling rate when stable
   stability_threshold_pct: 1.0
   stability_window_sec: 5
 
@@ -113,10 +118,10 @@ Test coverage includes:
 
 ## 🏠 Deployment Targets
 
-This system supports multiple Raspberry Pi devices, each with its own `config.yaml`. Examples include:
+This system supports multiple Raspberry Pi devices and deployment scenarios using per-device `config.yaml` entries grouped by site. Site selection is CLI-switchable or defaults to `main_site`. Examples include:
 
-- Main house pressure monitoring
-- Well pump and irrigation system sensors
+- Main house pressure monitoring (`main_site`)
+- Well pump and irrigation system sensors (`aux_site`)
 - Shop and remote locations
 
 ---
