@@ -46,13 +46,10 @@ def test_sensor_to_mqtt_flow(mock_mqtt_client):
     readings = sensor.read_all()
     assert isinstance(readings, list)
     assert any(
-        r.get("channel") == 0 and round(r.get("value", 0), 2) == 50.0
+        r[0] == "house_branch" and round(r[1], 2) == 50.0
         for r in readings
     )
-    payload = build_payload([
-        {"name": cfg["sensor"]["channels"]["0"]["name"], "value": r["value"]}
-        for r in readings
-    ])
+    payload = build_payload(readings)
 
     # Publish to MQTT
     pub = MqttPublisher(cfg)
