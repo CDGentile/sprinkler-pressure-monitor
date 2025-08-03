@@ -20,6 +20,8 @@ All notable changes to this project will be documented in this file.
 - Test coverage for site-specific sensor naming and dynamic site config loading
 - Integration test (`test_sensor_to_mqtt_flow`) updated to verify named sensor readings in payload
 - Updated README to reflect new CLI options and config structure
+- ADS1115 hardware integration in `sensor.py` with module-level imports and safe fallbacks
+- Unit test with mocks for ADS1115 integration, enabling validation without hardware
 
 ### Changed
 - Payloads now include sensor `name` and `value` as separate fields

@@ -34,3 +34,23 @@ def test_voltage_to_value_conversion(mock_config):
     # Channel 2: 2.5V → 100.0 (based on max_value = 200.0)
     assert readings[1]["name"] == "sensor2"
     assert readings[1]["value"] == pytest.approx(100.0)
+from unittest.mock import patch, MagicMock
+
+@patch("pressure_monitor.sensor.AnalogIn")
+@patch("pressure_monitor.sensor.ADS")
+@patch("pressure_monitor.sensor.busio.I2C")
+@patch("pressure_monitor.sensor.board")
+def test_ads1115_integration(mock_board, mock_i2c, mock_ads, mock_analogin, mock_config):
+    # Mock AnalogIn to always return 2.5V
+    mock_channel = MagicMock()
+    mock_channel.voltage = 2.5
+    mock_analogin.return_value = mock_channel
+
+    sm = SensorManager(mock_config)
+    readings = sm.read_all()
+
+    # Verify names and scaled values
+    assert readings[0]["name"] == "sensor0"
+    assert readings[0]["value"] == pytest.approx(50.0)
+    assert readings[1]["name"] == "sensor2"
+    assert readings[1]["value"] == pytest.approx(100.0)
