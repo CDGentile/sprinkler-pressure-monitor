@@ -12,7 +12,7 @@ class Controller:
         self.threshold_pct = config["sampling"]["stability_threshold_pct"]
         self.window_sec = config["sampling"]["stability_window_sec"]
 
-        self.history = {}  # {channel: [(timestamp, value), ...]}
+        self.history = {}  # {name: [(timestamp, value), ...]}
         self.last_publish_time = 0
         self.stable = False
 
@@ -45,11 +45,11 @@ class Controller:
 
     def _update_history(self, now, readings):
         for r in readings:
-            ch = r["channel"]
+            name = r["name"]
             val = r["value"]
-            if ch not in self.history:
-                self.history[ch] = []
-            self.history[ch].append((now, val))
+            if name not in self.history:
+                self.history[name] = []
+            self.history[name].append((now, val))
 
         # Trim history to the configured window
         cutoff = now - self.window_sec
@@ -68,10 +68,13 @@ class Controller:
             vmin, vmax = min(values), max(values)
 
             # Use configured max_value as denominator instead of vmax
-            try:
-                max_scale = self.config["sensor"]["channels"][str(ch)]["max_value"]
-            except KeyError:
-                max_scale = 100.0  # fallback
+            max_scale = None
+            for cfg in self.config["sensor"]["channels"].values():
+                if cfg.get("name") == ch:
+                    max_scale = cfg.get("max_value", 100.0)
+                    break
+            if max_scale is None:
+                max_scale = 100.0
 
             if max_scale == 0:
                 continue

@@ -46,7 +46,7 @@ def test_sensor_to_mqtt_flow(mock_mqtt_client):
     readings = sensor.read_all()
     assert isinstance(readings, list)
     assert any(
-        r[0] == "house_branch" and round(r[1], 2) == 50.0
+        r["name"] == "house_branch" and round(r["value"], 2) == 50.0
         for r in readings
     )
     payload = build_payload(readings)
@@ -70,7 +70,7 @@ def test_load_config_for_specific_site():
             "main_site": {
                 "sensor": {
                     "channels": {
-                        0: {
+                        "0": {
                             "enabled": True,
                             "name": "house_branch",
                             "max_voltage": 5.0,
@@ -82,7 +82,7 @@ def test_load_config_for_specific_site():
             "aux_site": {
                 "sensor": {
                     "channels": {
-                        1: {
+                        "1": {
                             "enabled": True,
                             "name": "shop_well",
                             "max_voltage": 5.0,
@@ -101,4 +101,4 @@ def test_load_config_for_specific_site():
         yaml.dump(config_data, tmp)
         tmp.flush()
         loaded_config = load_config(tmp.name, site="aux_site")
-        assert loaded_config["sensor"]["channels"][1]["name"] == "shop_well"
+        assert loaded_config["sensor"]["channels"]["1"]["name"] == "shop_well"

@@ -28,9 +28,9 @@ def test_voltage_to_value_conversion(mock_config):
     assert len(readings) == 2
 
     # Channel 0: 2.5V → 50.0
-    assert readings[0][0] == "sensor0"
-    assert readings[0][1] == pytest.approx(50.0)
+    assert readings[0]["name"] == "sensor0"
+    assert readings[0]["value"] == pytest.approx(50.0)
 
     # Channel 2: 2.5V → 100.0 (based on max_value = 200.0)
-    assert readings[1][0] == "sensor2"
-    assert readings[1][1] == pytest.approx(100.0)
+    assert readings[1]["name"] == "sensor2"
+    assert readings[1]["value"] == pytest.approx(100.0)

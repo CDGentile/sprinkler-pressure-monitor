@@ -6,3 +6,5 @@ class ConsolePublisher:
 
     def publish(self, payload):
         print(json.dumps(payload, indent=2))
+        for r in payload.get("readings", []):
+            print(f"[ConsolePublisher] {r['name']}: {r['value']}")

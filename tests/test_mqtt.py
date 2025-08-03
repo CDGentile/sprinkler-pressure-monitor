@@ -19,7 +19,7 @@ def mqtt_config():
 def mock_payload():
     return {
         "timestamp": 1690000000.0,
-        "readings": [{"channel": 0, "voltage": 2.5, "value": 50.0}],
+        "readings": [{"name": "house_branch", "value": 50.0}],
         "status": {"ok": True, "note": "test"}
     }
 

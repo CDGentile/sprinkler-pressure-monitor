@@ -1,4 +1,5 @@
-adafruit-circuitpython-ads1x15
-paho-mqtt
-PyYAML
-pytest
+adafruit-circuitpython-ads1x15>=2.4.4
+Adafruit-Blinka>=8.0.0
+paho-mqtt>=1.6.1
+PyYAML>=6.0.0
+pytest>=8.0.0
