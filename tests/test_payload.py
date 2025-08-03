@@ -3,8 +3,8 @@ from pressure_monitor.payload import build_payload
 
 def test_payload_structure():
     mock_readings = [
-        ("house_branch", 50.0),
-        ("irrigation_branch", 80.0),
+        {"name": "house_branch", "value": 50.0},
+        {"name": "irrigation_branch", "value": 80.0},
     ]
 
     payload = build_payload(mock_readings)

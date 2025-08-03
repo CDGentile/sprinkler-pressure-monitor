@@ -11,4 +11,6 @@ class MqttPublisher:
 
     def publish(self, payload):
         message = json.dumps(payload)
+        for r in payload.get("readings", []):
+            print(f"[MqttPublisher] {r['name']}: {r['value']}")
         self.client.publish(self.topic, message, qos=self.config.get("qos", 0))

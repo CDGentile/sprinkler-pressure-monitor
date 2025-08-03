@@ -12,14 +12,17 @@ class SimulatedSensorManager:
 
     def read_all(self):
         readings = []
+        channels_cfg = self.config["sensor"]["channels"]
         for ch in self.channels:
             delta = random.uniform(-0.3, 0.3)
             self.baseline[ch] += delta
-            voltage = (self.baseline[ch] / 100.0) * 5.0  # match calibration
-
             # Retrieve channel config
-            cfg = self.config["sensor"]["channels"][str(ch)]
+            cfg = channels_cfg.get(ch) or channels_cfg.get(str(ch))
+            if not cfg:
+                raise KeyError(f"Channel {ch} not found in config")
+            voltage = (self.baseline[ch] / 100.0) * cfg.get("max_voltage", 5.0)  # match calibration
+
             name = cfg["name"]
-            readings.append((name, self.baseline[ch]))
+            readings.append({"name": name, "value": self.baseline[ch]})
 
         return readings

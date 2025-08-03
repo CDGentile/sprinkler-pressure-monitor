@@ -28,6 +28,12 @@ All notable changes to this project will be documented in this file.
 - `sensor.py` and `sensor_sim.py` both updated to return full metadata for each reading (`channel`, `voltage`, `value`, `name`)
 - `main.py` uses `config.yaml` defaults but accepts CLI overrides
 - Configuration now encapsulates all logic per "site", supporting multiple physical deployments
+- Standardized sensor readings across all modules to use `{ "name": ..., "value": ... }` format
+- Updated `sensor.py` and `sensor_sim.py` to return readings with sensor names instead of channel numbers, using `max_voltage` for scaling
+- Refactored `controller.py` to index history and stability checks by sensor name
+- Simplified `payload.py` to directly forward reading dicts
+- Updated console and MQTT outputs to display/publish sensor names and values
+- Aligned all tests (`test_sensor.py`, `test_integration.py`, `test_controller.py`, `test_payload.py`, `test_mqtt.py`) with the new data structure
 
 ---
 

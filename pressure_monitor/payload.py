@@ -3,6 +3,6 @@ import time
 def build_payload(readings):
     return {
         "timestamp": time.time(),
-        "readings": [{"name": name, "value": value} for name, value in readings],
+        "readings": readings,
         "status": {"ok": True, "note": "stub"}
     }
