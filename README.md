@@ -6,14 +6,15 @@ A modular, test-driven Python system for monitoring water pressure via ADS1115 s
 
 ## 🧱 Architecture Overview
 
-This system reads analog pressure sensors via the ADS1115 ADC and publishes structured payloads over MQTT. Sampling rate is dynamically throttled based on system stability to minimize data volume during steady-state operation. Configuration supports multiple site profiles to enable flexible deployment across different locations, with site-based config selection at runtime.
+This system reads analog pressure sensors via the ADS1115 ADC and publishes structured payloads over multiple outputs concurrently. Sampling rate is dynamically throttled based on system stability to minimize data volume during steady-state operation. Configuration supports multiple site profiles to enable flexible deployment across different locations, with site-based config selection at runtime.
 
 - 🧠 **SensorManager**: Reads and calibrates pressure from configured ADC channels
 - 📦 **PayloadBuilder**: Creates timestamped, structured payloads
-- 📤 **OutputManager**: Currently supports MQTT or console
+- 📤 **Outputs**: Console and MQTT supported concurrently via PublisherManager (configurable)
 - 🧮 **Controller**: Central loop, manages sampling, stability detection, and publishing
 - ⚙️ **Config**: YAML-driven parameters for hardware, timing, output, and site selection
 - 🧪 **Test suite**: Pytest coverage across all logic, with integration path validation
+- 📝 **Verbose Mode**: Enables detailed console output, showing per-sensor values and MQTT debug logs
 
 ---
 
@@ -32,7 +33,8 @@ sprinkler-pressure-monitor/
 │   ├── payload.py
 │   └── outputs/
 │       ├── mqtt.py
-│       └── console.py
+│       ├── console.py
+│       └── publisher_manager.py
 ├── tests/
 │   ├── test_sensor.py
 │   ├── test_payload.py
@@ -43,12 +45,36 @@ sprinkler-pressure-monitor/
 
 ---
 
+## ▶️ Usage
+
+1. Create and activate a virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Run the monitor with your chosen site configuration:
+   ```bash
+   python main.py --site main_site --verbose
+   ```
+
+   - `--site`: Selects the site profile from `config.yaml`
+   - `--verbose`: Enables detailed console output
+   - `--simulate-sensor`: Runs with simulated values instead of hardware
+
+---
+
 ## 🧪 Simulation Mode
 
 Simulation mode can be enabled or customized via CLI overrides:
 
 - `--simulate-sensor`: Use simulated sensor input instead of real hardware.
-- `--simulate-output`: Use console output instead of MQTT publishing.
+- `--verbose`: Enable detailed console output, showing per-sensor values and MQTT debug logs
 - `--site`: Select the site configuration to load.
 
 If these flags are not provided, the system defaults to the settings specified in `config.yaml` under the `simulation` section. For example, by default, both sensor simulation and console output can be enabled or disabled according to the config.
@@ -88,7 +114,11 @@ sampling:
 
 simulation:
   sensor: true                  # Use simulated sensor input (True/False)
-  output: true                  # Use console instead of MQTT (True/False)
+
+outputs:
+  console: true
+  mqtt: true
+  verbose: false
 
 mqtt:
   enabled: true
@@ -118,7 +148,7 @@ Test coverage includes:
 
 ## 🚀 Planned Features
 
-- [ ] Real sensor integration via ADS1115
+- [x] Real sensor integration via ADS1115
 - [ ] Systemd service definition
 - [ ] InfluxDB/Telegraf output (optional backend)
 - [ ] Local buffering + replay on reconnect

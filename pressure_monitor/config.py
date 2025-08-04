@@ -18,7 +18,8 @@ def load_config(path, site="main_site"):
         "sensor": selected_site_config["sensor"],
         "sampling": full_config.get("sampling", {}),
         "simulation": full_config.get("simulation", {}),
-        "mqtt": full_config.get("mqtt", {})
+        "mqtt": full_config.get("mqtt", {}),
+        "outputs": full_config.get("outputs", {}),
     }
 
     return merged_config
