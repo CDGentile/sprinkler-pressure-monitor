@@ -41,12 +41,17 @@ sampling:
   stability_window_sec: 5       # Time window to evaluate stability (sec)
 
 simulation:
-  sensor: true                  # Use simulated sensor input (True/False)
+  sensor: false                  # Use simulated sensor input (True/False)
   output: true                  # Use console instead of MQTT (True/False)
+
+outputs:
+  console: false
+  mqtt: true
+  verbose: false
 
 mqtt:
   enabled: true
-  host: 192.168.0.50
+  host: 192.168.0.119
   port: 1883
   topic: home/sensors/pressure
   qos: 1

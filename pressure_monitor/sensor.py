@@ -1,3 +1,15 @@
+try:
+    import board
+    import busio
+    import adafruit_ads1x15.ads1115 as ADS
+    from adafruit_ads1x15.analog_in import AnalogIn
+except ImportError:
+    from types import SimpleNamespace
+    board = SimpleNamespace(SCL=None, SDA=None)
+    busio = SimpleNamespace(I2C=None)
+    ADS = SimpleNamespace(ADS1115=None, P0=None, P1=None, P2=None, P3=None)
+    AnalogIn = None
+
 class SensorManager:
     def __init__(self, config):
         self.channel_configs = {
@@ -8,26 +20,18 @@ class SensorManager:
         self.enabled_channels = sorted(self.channel_configs.keys())
         print(f"Enabled sensor channels: {self.enabled_channels}")
 
-        # Scoped imports for ADS1115 hardware
-        try:
-            import board
-            import busio
-            from adafruit_ads1x15.ads1115 import ADS1115
-            from adafruit_ads1x15.analog_in import AnalogIn
-
+        if board and busio and ADS and AnalogIn:
             self.board = board
             self.busio = busio
-            self.ADS1115 = ADS1115
+            self.ADS1115 = ADS.ADS1115
             self.AnalogIn = AnalogIn
-
-            # Channel map: config channel number → ADS constant
             self.CHANNEL_MAP = {
-                0: ADS1115.P0,
-                1: ADS1115.P1,
-                2: ADS1115.P2,
-                3: ADS1115.P3
+                0: ADS.P0,
+                1: ADS.P1,
+                2: ADS.P2,
+                3: ADS.P3
             }
-        except ImportError:
+        else:
             print("ADS1115 libraries not available; running in simulation/test mode.")
             self.board = None
             self.busio = None

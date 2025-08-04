@@ -20,6 +20,11 @@ All notable changes to this project will be documented in this file.
 - Test coverage for site-specific sensor naming and dynamic site config loading
 - Integration test (`test_sensor_to_mqtt_flow`) updated to verify named sensor readings in payload
 - Updated README to reflect new CLI options and config structure
+- ADS1115 hardware integration in `sensor.py` with module-level imports and safe fallbacks
+- Unit test with mocks for ADS1115 integration, enabling validation without hardware
+- PublisherManager to support multiple outputs (console + MQTT) concurrently
+- `outputs` block in config for enabling/disabling console, MQTT, and verbose logging
+- `--verbose` CLI flag to control detailed console and MQTT debug output
 
 ### Changed
 - Payloads now include sensor `name` and `value` as separate fields
@@ -34,6 +39,10 @@ All notable changes to this project will be documented in this file.
 - Simplified `payload.py` to directly forward reading dicts
 - Updated console and MQTT outputs to display/publish sensor names and values
 - Aligned all tests (`test_sensor.py`, `test_integration.py`, `test_controller.py`, `test_payload.py`, `test_mqtt.py`) with the new data structure
+- ConsolePublisher updated to support verbose mode (per-reading output with 2 decimal places)
+- Controller and MqttPublisher debug logs now respect verbose flag
+- `main.py` updated to instantiate PublisherManager instead of single output
+- README updated with usage instructions, config examples, and new file structure
 
 ---
 

@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from pressure_monitor.payload import build_payload
 
 class Controller:
@@ -15,9 +16,11 @@ class Controller:
         self.history = {}  # {name: [(timestamp, value), ...]}
         self.last_publish_time = 0
         self.stable = False
+        self.verbose = config.get("outputs", {}).get("verbose", False)
 
     def run(self):
-        print("Starting controller loop...")
+        if self.verbose:
+            print("Starting controller loop...")
         try:
             while True:
                 now = time.time()
@@ -34,7 +37,9 @@ class Controller:
                     try:
                         self.output.publish(payload)
                         self.last_publish_time = now
-                        print(f"Published at {now:.2f} (stable={self.stable})")
+                        if self.verbose:
+                            ts_str = datetime.fromtimestamp(now).strftime("%H:%M:%S.%f")[:-4]
+                            print(f"Published at {ts_str} (stable={self.stable})")
                     except Exception as e:
                         print(f"[ERROR] Output failed: {e}")
 
