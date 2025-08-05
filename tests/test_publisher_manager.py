@@ -1,5 +1,3 @@
-
-
 import pytest
 from unittest.mock import MagicMock, patch
 from pressure_monitor.outputs.publisher_manager import PublisherManager
@@ -17,7 +15,7 @@ def test_enables_console_and_mqtt_publishers():
 
         # Both publishers should be instantiated
         MockConsole.assert_called_once_with(mock_config["outputs"], verbose=True)
-        MockMqtt.assert_called_once_with(mock_config["mqtt"])
+        MockMqtt.assert_called_once_with(mock_config)
         assert len(manager.publishers) == 2
 
 def test_publish_forwards_to_all_publishers():
