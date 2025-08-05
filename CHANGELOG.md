@@ -25,9 +25,14 @@ All notable changes to this project will be documented in this file.
 - PublisherManager to support multiple outputs (console + MQTT) concurrently
 - `outputs` block in config for enabling/disabling console, MQTT, and verbose logging
 - `--verbose` CLI flag to control detailed console and MQTT debug output
+- **Per-sensor payload publishing**: `payload.py` now emits one message per sensor reading for compatibility with Telegraf/InfluxDB
+- **Test suite updates**: Integration and MQTT publisher tests extended to validate per-sensor publishing
 
 ### Changed
 - Payloads now include sensor `name` and `value` as separate fields
+- **Payload structure changed from a single object with `readings[]` to a list of individual per-sensor payloads**
+- `MqttPublisher` updated to loop over payload list and publish each individually
+- `ConsolePublisher` updated to loop over payload list and print each individually
 - `config.py` now fully supports dynamic site selection using the `--site` CLI argument with fallback to `main_site` if unspecified or invalid
 - Payload builder updated to include sensor `name` using config-defined labels
 - `sensor.py` and `sensor_sim.py` both updated to return full metadata for each reading (`channel`, `voltage`, `value`, `name`)
