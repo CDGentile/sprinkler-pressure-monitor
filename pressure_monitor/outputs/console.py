@@ -5,9 +5,9 @@ class ConsolePublisher:
         self.verbose = verbose
         print("[ConsolePublisher] Ready to print payloads to stdout")
 
-    def publish(self, payload):
+    def publish(self, payloads):
         if self.verbose:
-            for r in payload.get("readings", []):
-                print(f"[ConsolePublisher] {r['name']}: {r['value']:.2f}")
+            for p in payloads:
+                print(f"[ConsolePublisher] {p['name']}: {p['value']:.2f}")
         else:
-            print(json.dumps(payload, indent=2))
+            print(json.dumps(payloads, indent=2))

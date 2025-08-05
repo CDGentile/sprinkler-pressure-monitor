@@ -7,17 +7,16 @@ def test_payload_structure():
         {"name": "irrigation_branch", "value": 80.0},
     ]
 
-    payload = build_payload(mock_readings)
+    payloads = build_payload(mock_readings)
 
-    assert "timestamp" in payload
-    assert isinstance(payload["timestamp"], float)
-    assert abs(payload["timestamp"] - time.time()) < 5  # close to now
+    assert isinstance(payloads, list)
+    assert len(payloads) == 2
 
-    assert "readings" in payload
-    assert len(payload["readings"]) == 2
-
-    assert payload["readings"][0]["name"] == "house_branch"
-    assert payload["readings"][1]["name"] == "irrigation_branch"
-
-    assert "status" in payload
-    assert payload["status"]["ok"] is True
+    for p, expected in zip(payloads, mock_readings):
+        assert "timestamp" in p
+        assert isinstance(p["timestamp"], float)
+        assert abs(p["timestamp"] - time.time()) < 5  # close to now
+        assert p["name"] == expected["name"]
+        assert p["value"] == expected["value"]
+        assert "status" in p
+        assert p["status"]["ok"] is True

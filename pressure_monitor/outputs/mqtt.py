@@ -19,9 +19,10 @@ class MqttPublisher:
         if self.verbose:
             print(f"Connected to MQTT broker at {self.config['host']}")
 
-    def publish(self, payload):
-        message = json.dumps(payload)
-        if self.verbose:
-            for r in payload.get("readings", []):
-                print(f"[MqttPublisher] {r['name']}: {r['value']:.2f}")
-        self.client.publish(self.topic, message, qos=self.config.get("qos", 0))
+    def publish(self, payloads):
+        # payloads is now a list of individual sensor payloads
+        for p in payloads:
+            message = json.dumps(p)
+            if self.verbose:
+                print(f"[MqttPublisher] {p['name']}: {p['value']:.2f}")
+            self.client.publish(self.topic, message, qos=self.config.get("qos", 0))

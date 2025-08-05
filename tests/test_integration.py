@@ -49,20 +49,20 @@ def test_sensor_to_mqtt_flow(mock_mqtt_client):
         r["name"] == "house_branch" and round(r["value"], 2) == 50.0
         for r in readings
     )
-    payload = build_payload(readings)
+    payloads = build_payload(readings)
 
     # Publish to MQTT
     pub = MqttPublisher(cfg)
-    pub.publish(payload)
+    pub.publish(payloads)
 
     # Assertions
     instance = mock_mqtt_client.return_value
     instance.connect.assert_called_once_with("localhost", 1883)
-    instance.publish.assert_called_once_with(
-        "home/test/integration",
-        json.dumps(payload),
-        qos=1
-    )
+
+    expected_calls = [(
+        ("home/test/integration", json.dumps(p),), {"qos": 1}
+    ) for p in payloads]
+    instance.publish.assert_has_calls(expected_calls, any_order=False)
 
 def test_load_config_for_specific_site():
     config_data = {

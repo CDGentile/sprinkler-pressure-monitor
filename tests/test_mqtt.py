@@ -17,11 +17,14 @@ def mqtt_config():
 
 @pytest.fixture
 def mock_payload():
-    return {
-        "timestamp": 1690000000.0,
-        "readings": [{"name": "house_branch", "value": 50.0}],
-        "status": {"ok": True, "note": "test"}
-    }
+    return [
+        {
+            "timestamp": 1690000000.0,
+            "name": "house_branch",
+            "value": 50.0,
+            "status": {"ok": True, "note": "test"}
+        }
+    ]
 
 @patch("pressure_monitor.outputs.mqtt.mqtt.Client")
 def test_mqtt_initialization(mock_mqtt_client, mqtt_config):
@@ -38,8 +41,5 @@ def test_mqtt_publish_payload(mock_mqtt_client, mqtt_config, mock_payload):
 
     pub.publish(mock_payload)
 
-    instance.publish.assert_called_once_with(
-        "home/sensors/test",
-        json.dumps(mock_payload),
-        qos=1
-    )
+    expected_calls = [(( "home/sensors/test", json.dumps(p), ), {"qos": 1}) for p in mock_payload]
+    instance.publish.assert_has_calls(expected_calls, any_order=False)
