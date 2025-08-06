@@ -19,8 +19,7 @@ class Controller:
         self.verbose = config.get("outputs", {}).get("verbose", False)
 
     def run(self):
-        if self.verbose:
-            print("Starting controller loop...")
+        print("Starting controller loop...")
         try:
             while True:
                 now = time.time()

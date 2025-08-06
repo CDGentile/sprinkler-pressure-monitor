@@ -11,13 +11,11 @@ class MqttPublisher:
 
         # Debug disconnect callback
         def on_disconnect(client, userdata, rc):
-            if self.verbose:
-                print(f"[MqttPublisher] Disconnected from broker with code {rc}")
+            print(f"[MqttPublisher] Disconnected from broker with code {rc}")
         self.client.on_disconnect = on_disconnect
 
         self.topic = self.config["topic"]
-        if self.verbose:
-            print(f"Connected to MQTT broker at {self.config['host']}")
+        print(f"Connected to MQTT broker at {self.config['host']}, printing to topic {self.topic}")
 
     def publish(self, payloads):
         # payloads is now a list of individual sensor payloads
