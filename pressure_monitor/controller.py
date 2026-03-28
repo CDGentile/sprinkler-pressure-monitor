@@ -32,7 +32,7 @@ class Controller:
                     interval = 1 / self.high_rate
 
                 if now - self.last_publish_time >= interval:
-                    payload = build_payload(readings)
+                    payload = build_payload(readings, stable=self.stable)
                     try:
                         self.output.publish(payload)
                         self.last_publish_time = now

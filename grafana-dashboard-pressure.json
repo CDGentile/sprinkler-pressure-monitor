@@ -264,6 +264,108 @@
           "graphMode": "none",
           "justifyMode": "auto"
         }
+      },
+      {
+        "id": 5,
+        "title": "System Stability",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 12, "x": 0, "y": 26 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT last(\"stable\") FROM \"pressure\" WHERE location =~ /^$location$/ AND $timeFilter GROUP BY location",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              { "type": "value", "options": { "0": { "text": "UNSTABLE", "color": "orange", "index": 0 }, "1": { "text": "STABLE", "color": "green", "index": 1 } } },
+              { "type": "value", "options": { "false": { "text": "UNSTABLE", "color": "orange", "index": 0 }, "true": { "text": "STABLE", "color": "green", "index": 1 } } }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "orange", "value": null },
+                { "color": "green", "value": 1 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "horizontal",
+          "textMode": "auto",
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "center"
+        }
+      },
+      {
+        "id": 6,
+        "title": "Stability Timeline",
+        "type": "timeseries",
+        "gridPos": { "h": 4, "w": 12, "x": 12, "y": 26 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT last(\"stable\") FROM \"pressure\" WHERE location =~ /^$location$/ AND $timeFilter GROUP BY time($__interval), location fill(previous)",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 1,
+            "decimals": 0,
+            "custom": {
+              "lineWidth": 2,
+              "fillOpacity": 30,
+              "showPoints": "never",
+              "spanNulls": true,
+              "drawStyle": "line",
+              "stacking": { "mode": "none" }
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "orange", "value": null },
+                { "color": "green", "value": 1 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "multi"
+          }
+        }
       }
     ],
     "schemaVersion": 36,

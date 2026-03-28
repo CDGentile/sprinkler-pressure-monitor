@@ -142,6 +142,10 @@ class InfluxDBV1Publisher:
         status_ok = status.get("ok", True)
         fields.append(f"status_ok={str(status_ok).lower()}")
 
+        # Add stability field
+        stable = payload.get("stable", False)
+        fields.append(f"stable={str(stable).lower()}")
+
         # Add status note if present and non-empty
         status_note = status.get("note", "")
         if status_note:

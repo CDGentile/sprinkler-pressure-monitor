@@ -35,6 +35,7 @@ def sample_payload():
         "name": "test_sensor",
         "value": 52.4,
         "voltage": 2.62,
+        "stable": True,
         "status": {
             "ok": True,
             "note": ""
@@ -52,6 +53,7 @@ def sample_payloads(sample_payload):
             "name": "another_sensor",
             "value": 48.1,
             "voltage": 2.41,
+            "stable": False,
             "status": {
                 "ok": True,
                 "note": ""
@@ -136,8 +138,29 @@ class TestLineProtocolConversion:
         assert "location=test_site" in line
         assert "value=52.4" in line
         assert "voltage=2.62" in line
+        assert "stable=true" in line
         assert "status_ok=true" in line
         assert "1711130400000000000" in line
+
+    @patch('pressure_monitor.outputs.influxdb_v1.requests.Session')
+    def test_conversion_stable_false(self, mock_session_class, mock_config):
+        """Test conversion with stable=false."""
+        mock_session = MagicMock()
+        mock_session.get.return_value.status_code = 204
+        mock_session_class.return_value = mock_session
+
+        publisher = InfluxDBV1Publisher(mock_config)
+
+        payload = {
+            "timestamp": 1711130400.0,
+            "name": "test_sensor",
+            "value": 52.4,
+            "stable": False,
+            "status": {"ok": True, "note": ""}
+        }
+
+        line = publisher._payload_to_line_protocol(payload)
+        assert "stable=false" in line
 
     @patch('pressure_monitor.outputs.influxdb_v1.requests.Session')
     def test_conversion_with_status_note(self, mock_session_class, mock_config):

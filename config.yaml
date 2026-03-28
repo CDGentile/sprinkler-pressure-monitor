@@ -59,7 +59,7 @@ sites:
 
 # Sampling configuration
 sampling:
-  high_rate_hz: 20.0      # Rate when pressure is changing
+  high_rate_hz: 4.0       # Rate when pressure is changing
   low_rate_hz: 0.2        # Rate when pressure is stable (1 sample every 5 sec)
   stability_threshold_pct: 2.0
   stability_window_sec: 5
