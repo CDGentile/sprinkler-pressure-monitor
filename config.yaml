@@ -1,57 +1,118 @@
+# Sprinkler Pressure Monitor Configuration
+#
+# Environment variables can be used with ${VAR} or ${VAR:-default} syntax.
+# Create a .env file (see .env.example) for device-specific settings.
+
+# Site definitions - each site has its own sensor configuration
 sites:
   main_site:
     sensor:
       type: ads1115
+      i2c_address: 0x48
       channels:
         0:
           enabled: true
           name: house_branch
           max_voltage: 5.0
           max_value: 100.0
+          calibration_offset: 0.0
+          min_valid_value: 0.0
+          max_valid_value: 120.0
 
   aux_site:
     sensor:
       type: ads1115
+      i2c_address: 0x48
       channels:
         0:
           enabled: true
           name: main_well
           max_voltage: 5.0
           max_value: 100.0
+          calibration_offset: 0.0
+          min_valid_value: 0.0
+          max_valid_value: 120.0
         1:
           enabled: true
           name: shop_well
           max_voltage: 5.0
           max_value: 100.0
+          calibration_offset: 0.0
+          min_valid_value: 0.0
+          max_valid_value: 120.0
         2:
           enabled: true
           name: irrigation_branch
           max_voltage: 5.0
           max_value: 100.0
+          calibration_offset: 0.0
+          min_valid_value: 0.0
+          max_valid_value: 120.0
         3:
           enabled: true
           name: runway_well
           max_voltage: 5.0
           max_value: 100.0
+          calibration_offset: 0.0
+          min_valid_value: 0.0
+          max_valid_value: 120.0
 
+# Sampling configuration
 sampling:
-  high_rate_hz: 20.0            # Sampling rate during dynamic conditions (Hz)
-  low_rate_hz: 0.2              # Sampling rate when stable (Hz)
-  stability_threshold_pct: 2.0  # Change threshold to consider data stable (%)
-  stability_window_sec: 5       # Time window to evaluate stability (sec)
+  high_rate_hz: 20.0      # Rate when pressure is changing
+  low_rate_hz: 0.2        # Rate when pressure is stable (1 sample every 5 sec)
+  stability_threshold_pct: 2.0
+  stability_window_sec: 5
 
+# Simulation mode - for testing without hardware
 simulation:
-  sensor: false                  # Use simulated sensor input (True/False)
-  output: true                  # Use console instead of MQTT (True/False)
+  sensor: false
 
+# Output configuration
+# Set which outputs are active. At least one should be enabled.
 outputs:
-  console: false
-  mqtt: true
-  verbose: false
+  console: ${CONSOLE_OUTPUT:-false}      # Print to stdout (useful for debugging)
+  mqtt: ${MQTT_OUTPUT:-false}            # Publish to MQTT broker
+  influxdb: ${INFLUXDB_OUTPUT:-true}     # Write directly to InfluxDB (primary)
+  verbose: ${VERBOSE:-false}             # Extra logging detail
 
+  # If these are true, startup fails if the output can't connect
+  mqtt_required: false
+  influxdb_required: true
+
+# InfluxDB configuration (primary storage)
+influxdb:
+  url: ${INFLUXDB_URL:-http://192.168.0.18:8086}
+  database: ${INFLUXDB_DATABASE:-sensors}
+  measurement: pressure
+  location: ${SITE_NAME:-unknown}
+
+  # Optional authentication (not required for local setup)
+  username: ${INFLUXDB_USERNAME:-}
+  password: ${INFLUXDB_PASSWORD:-}
+
+  # Connection settings
+  timeout: 10
+  max_retries: 3
+  retry_delay: 1.0
+
+# MQTT configuration (optional - for Home Assistant, etc.)
 mqtt:
-  enabled: true
-  host: 192.168.0.119
-  port: 1883
-  topic: home/sensors/pressure
+  host: ${MQTT_HOST:-192.168.0.18}
+  port: ${MQTT_PORT:-1883}
+  topic: ${MQTT_TOPIC:-home/sensors/pressure}
   qos: 1
+  client_id: ${CLIENT_ID:-pressure-monitor}
+
+  # Optional authentication
+  username: ${MQTT_USERNAME:-}
+  password: ${MQTT_PASSWORD:-}
+
+  # TLS (not needed for local network)
+  use_tls: false
+
+# Logging configuration
+logging:
+  level: ${LOG_LEVEL:-INFO}
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: ${LOG_FILE:-}  # Empty = no file logging, just console
