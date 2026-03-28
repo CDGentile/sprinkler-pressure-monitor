@@ -40,7 +40,7 @@ New and modified files committed to `main`:
 - `.gitignore` — Added .env, .DS_Store
 - `tests/test_influxdb_publisher.py` — 17 tests for the new publisher
 
-All 38 tests passing.
+38 tests passing at this phase (later increased to 40).
 
 ## Phase 4: Local Testing
 
@@ -75,6 +75,7 @@ All 38 tests passing.
   - Pressure timeline graph (all sensors)
   - 24h summary table (min/max/avg per sensor)
   - Status overview panel
+  - System stability indicator and stability timeline (added post-deployment)
   - Location and sensor dropdown filters
 - Dashboard URL: http://192.168.0.18:9000/d/water-pressure-monitor/water-pressure-monitor
 
@@ -128,6 +129,42 @@ ssh cdgentile@192.168.0.18 "docker exec influxdb influx -execute 'DROP DATABASE 
 ```bash
 ssh cdgentile@192.168.0.18 "cd ~/mqtt-broker && docker compose down && rm -rf ~/mqtt-broker"
 ```
+
+---
+
+## Post-Deployment Update: Stability Field & Sample Rate Reduction
+
+**Date:** 2026-03-28
+**Commit:** db8eda1
+
+### Changes
+
+1. **Reduced `high_rate_hz` from 20.0 to 4.0** (`config.yaml`)
+   - Cuts data volume during unstable periods by ~5x
+   - Revised data rates:
+     - Sprinkler1 (1 channel): ~12 points/30s (stable) or ~120 points/30s (unstable)
+     - Sprinkler2 (4 channels): ~24 points/30s (stable) or ~480 points/30s (unstable)
+
+2. **Added `stable` boolean field to data pipeline**
+   - `pressure_monitor/payload.py` — `build_payload()` accepts `stable` parameter (default False)
+   - `pressure_monitor/controller.py` — Passes `self.stable` to `build_payload()`
+   - `pressure_monitor/outputs/influxdb_v1.py` — Writes `stable=true/false` as InfluxDB field
+   - InfluxDB line protocol now includes: `value=52.4,voltage=2.62,status_ok=true,stable=true`
+
+3. **New Grafana dashboard panels** (`grafana-dashboard-pressure.json`)
+   - Panel 5: **System Stability** (stat) — Shows STABLE/UNSTABLE per location with value mappings
+   - Panel 6: **Stability Timeline** (timeseries) — Binary 0/1 graph showing stability over time
+
+4. **Updated tests**
+   - `tests/test_payload.py` — Added `stable` field assertion + `test_payload_stable_flag` test
+   - `tests/test_influxdb_publisher.py` — Added `test_conversion_stable_false`, updated fixtures with `stable` key
+   - All 40 tests passing (up from 38)
+
+### Deployment
+
+- Code pushed to `main`, pulled on both Sprinkler Pis
+- Grafana dashboard updated via API (provisioned panels 5 & 6)
+- Services restarted on both devices
 
 ---
 
