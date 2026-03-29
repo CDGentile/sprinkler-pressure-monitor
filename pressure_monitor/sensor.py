@@ -1,5 +1,3 @@
-import time
-
 try:
     import board
     import busio
@@ -41,22 +39,14 @@ class SensorManager:
             self.AnalogIn = None
             self.CHANNEL_MAP = {}
 
-        self.ads = None
-        self._channels = {}
-        self._pins = {}
+        # Placeholder for ADC object, initialized later
+        self.ads = None  # To be initialized when hardware is available
 
         # Initialize ADS1115 if hardware libraries are available
         if self.busio and self.ADS1115:
             try:
                 i2c = self.busio.I2C(self.board.SCL, self.board.SDA)
                 self.ads = self.ADS1115(i2c)
-                # Pre-create AnalogIn objects (used for voltage conversion)
-                # and cache pin values for direct register access
-                for ch in self.enabled_channels:
-                    self._channels[ch] = self.AnalogIn(self.ads, self.CHANNEL_MAP[ch])
-                    # Single-ended pin = raw pin + 0x04
-                    self._pins[ch] = self.CHANNEL_MAP[ch] + 0x04
-                self._conversion_wait = 1.0 / self.ads.data_rate + 0.001
                 print("ADS1115 initialized successfully.")
             except Exception as e:
                 print(f"Failed to initialize ADS1115: {e}")
@@ -65,7 +55,7 @@ class SensorManager:
     def read_all(self):
         readings = []
         for ch in self.enabled_channels:
-            voltage = self.read_adc_channel(ch)
+            voltage = self.read_adc_channel(ch)  # Placeholder
             max_voltage = self.channel_configs[ch]["max_voltage"]
             max_value = self.channel_configs[ch]["max_value"]
             name = self.channel_configs[ch]["name"]
@@ -77,26 +67,10 @@ class SensorManager:
         return readings
 
     def read_adc_channel(self, ch):
-        if self.ads and ch in self._channels:
+        if self.ads and self.AnalogIn:
             try:
-                pin = self._pins[ch]
-                # Bypass the Adafruit library's _conversion_complete()
-                # polling which has an OS-bit race condition: the poll
-                # can return before the ADS1115 clears the OS bit,
-                # reading the previous channel's stale result.
-                # Instead, use time-based waiting for guaranteed completion.
-
-                # First conversion: sets MUX, allows input to settle
-                self.ads._write_config(pin)
-                time.sleep(self._conversion_wait)
-
-                # Second conversion: input settled, real read
-                self.ads._write_config(pin)
-                time.sleep(self._conversion_wait)
-
-                # Read result directly from conversion register
-                raw = self.ads._conversion_value(self.ads.get_last_result())
-                return self._channels[ch].convert_to_voltage(raw)
+                chan = self.AnalogIn(self.ads, self.CHANNEL_MAP[ch])
+                return chan.voltage
             except Exception as e:
                 print(f"Error reading channel {ch}: {e}")
                 return 0.0
