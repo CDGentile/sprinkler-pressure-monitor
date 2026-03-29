@@ -1,5 +1,3 @@
-import time
-
 try:
     import board
     import busio
@@ -13,8 +11,6 @@ except ImportError:
     AnalogIn = None
 
 class SensorManager:
-    CHANNEL_SETTLE_DELAY_SEC = 0.01
-
     def __init__(self, config):
         self.channel_configs = {
             int(ch): cfg for ch, cfg in config["sensor"]["channels"].items()
@@ -79,13 +75,7 @@ class SensorManager:
     def read_adc_channel(self, ch):
         if self.ads and self.AnalogIn:
             try:
-                chan = self.analog_inputs[ch]
-                # The ADS1115 multiplexer can briefly retain the previous channel's
-                # voltage after a channel switch. Discard the first reading and use
-                # the settled second sample instead.
-                _ = chan.voltage
-                time.sleep(self.CHANNEL_SETTLE_DELAY_SEC)
-                return chan.voltage
+                return self.analog_inputs[ch].voltage
             except Exception as e:
                 print(f"Error reading channel {ch}: {e}")
                 return 0.0
