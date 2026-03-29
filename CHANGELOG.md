@@ -29,6 +29,7 @@ All notable changes to this project will be documented in this file.
 - **Test suite updates**: Integration and MQTT publisher tests extended to validate per-sensor publishing
 
 ### Changed
+- ADS1115 reads now reuse per-channel `AnalogIn` objects and discard the first sample after a channel switch to reduce cross-channel carryover on multi-sensor installations
 - Payloads now include sensor `name` and `value` as separate fields
 - **Payload structure changed from a single object with `readings[]` to a list of individual per-sensor payloads**
 - `MqttPublisher` updated to loop over payload list and publish each individually

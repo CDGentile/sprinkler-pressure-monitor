@@ -15,6 +15,7 @@ This system reads analog pressure sensors via the ADS1115 ADC and publishes stru
 - ⚙️ **Config**: YAML-driven parameters for hardware, timing, output, and site selection
 - 🧪 **Test suite**: Pytest coverage across all logic, with integration path validation
 - 📝 **Verbose Mode**: Enables detailed console output, showing per-sensor values and MQTT debug logs
+- 🔌 **Safer ADS1115 Reads**: Reuses channel objects and discards the first sample after a channel switch to reduce mux carryover between sensors
 
 ---
 
@@ -143,6 +144,12 @@ Test coverage includes:
 - MQTT publishing (mocked)
 - Stability detection logic
 - Full integration path: sensor → payload → output
+
+---
+
+## Hardware Notes
+
+When using multiple ADS1115 channels, the monitor reuses each channel object and discards the first reading after a mux switch before using the next sample. This reduces stale-value carryover where one sensor can briefly report the previous channel's pressure.
 
 ---
 

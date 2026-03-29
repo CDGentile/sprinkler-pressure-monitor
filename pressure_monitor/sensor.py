@@ -1,3 +1,5 @@
+import time
+
 try:
     import board
     import busio
@@ -11,6 +13,8 @@ except ImportError:
     AnalogIn = None
 
 class SensorManager:
+    CHANNEL_SETTLE_DELAY_SEC = 0.01
+
     def __init__(self, config):
         self.channel_configs = {
             int(ch): cfg for ch, cfg in config["sensor"]["channels"].items()
@@ -41,16 +45,22 @@ class SensorManager:
 
         # Placeholder for ADC object, initialized later
         self.ads = None  # To be initialized when hardware is available
+        self.analog_inputs = {}
 
         # Initialize ADS1115 if hardware libraries are available
         if self.busio and self.ADS1115:
             try:
                 i2c = self.busio.I2C(self.board.SCL, self.board.SDA)
                 self.ads = self.ADS1115(i2c)
+                self.analog_inputs = {
+                    ch: self.AnalogIn(self.ads, self.CHANNEL_MAP[ch])
+                    for ch in self.enabled_channels
+                }
                 print("ADS1115 initialized successfully.")
             except Exception as e:
                 print(f"Failed to initialize ADS1115: {e}")
                 self.ads = None
+                self.analog_inputs = {}
 
     def read_all(self):
         readings = []
@@ -69,7 +79,12 @@ class SensorManager:
     def read_adc_channel(self, ch):
         if self.ads and self.AnalogIn:
             try:
-                chan = self.AnalogIn(self.ads, self.CHANNEL_MAP[ch])
+                chan = self.analog_inputs[ch]
+                # The ADS1115 multiplexer can briefly retain the previous channel's
+                # voltage after a channel switch. Discard the first reading and use
+                # the settled second sample instead.
+                _ = chan.voltage
+                time.sleep(self.CHANNEL_SETTLE_DELAY_SEC)
                 return chan.voltage
             except Exception as e:
                 print(f"Error reading channel {ch}: {e}")
