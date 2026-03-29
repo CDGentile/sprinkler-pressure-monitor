@@ -1,3 +1,5 @@
+import time
+
 try:
     import board
     import busio
@@ -70,9 +72,11 @@ class SensorManager:
         if self.ads and self.AnalogIn:
             try:
                 chan = self.AnalogIn(self.ads, self.CHANNEL_MAP[ch])
-                # Discard first read after mux switch to allow settling,
-                # then return the second (stable) read
+                # Discard first read after mux switch to allow settling
+                # on high-impedance pressure transducer inputs, then
+                # return the second (stable) read
                 _ = chan.voltage
+                time.sleep(0.015)
                 return chan.voltage
             except Exception as e:
                 print(f"Error reading channel {ch}: {e}")
