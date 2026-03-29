@@ -1,5 +1,3 @@
-import time
-
 try:
     import board
     import busio
@@ -43,12 +41,22 @@ class SensorManager:
 
         # Placeholder for ADC object, initialized later
         self.ads = None  # To be initialized when hardware is available
+        self._channels = {}
 
         # Initialize ADS1115 if hardware libraries are available
         if self.busio and self.ADS1115:
             try:
                 i2c = self.busio.I2C(self.board.SCL, self.board.SDA)
                 self.ads = self.ADS1115(i2c)
+                # Use 64 SPS instead of default 128 SPS. The longer
+                # conversion time (15.6ms vs 7.8ms) prevents a race
+                # condition in the Adafruit library where the OS bit
+                # poll returns before the ADS1115 has started its
+                # conversion, causing cross-channel reads.
+                self.ads.data_rate = 64
+                # Pre-create AnalogIn objects for each channel
+                for ch in self.enabled_channels:
+                    self._channels[ch] = self.AnalogIn(self.ads, self.CHANNEL_MAP[ch])
                 print("ADS1115 initialized successfully.")
             except Exception as e:
                 print(f"Failed to initialize ADS1115: {e}")
@@ -57,7 +65,7 @@ class SensorManager:
     def read_all(self):
         readings = []
         for ch in self.enabled_channels:
-            voltage = self.read_adc_channel(ch)  # Placeholder
+            voltage = self.read_adc_channel(ch)
             max_voltage = self.channel_configs[ch]["max_voltage"]
             max_value = self.channel_configs[ch]["max_value"]
             name = self.channel_configs[ch]["name"]
@@ -69,14 +77,12 @@ class SensorManager:
         return readings
 
     def read_adc_channel(self, ch):
-        if self.ads and self.AnalogIn:
+        if self.ads and ch in self._channels:
             try:
-                chan = self.AnalogIn(self.ads, self.CHANNEL_MAP[ch])
-                # Discard first read after mux switch to allow settling
-                # on high-impedance pressure transducer inputs, then
-                # return the second (stable) read
+                chan = self._channels[ch]
+                # Discard first read after mux switch to flush the
+                # conversion pipeline, then return the second read
                 _ = chan.voltage
-                time.sleep(0.015)
                 return chan.voltage
             except Exception as e:
                 print(f"Error reading channel {ch}: {e}")
