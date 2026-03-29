@@ -1,4 +1,5 @@
 import argparse
+import logging
 import sys
 
 from pressure_monitor.config import load_config
@@ -16,6 +17,15 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    log_level = logging.DEBUG if args.verbose else logging.INFO
+    logging.basicConfig(
+        level=log_level,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+        stream=sys.stdout,
+    )
+
     config = load_config("config.yaml", site=args.site)
 
     config.setdefault("outputs", {})
