@@ -1,0 +1,21 @@
+# Mosquitto MQTT Broker
+# Deployed on RasPi5 (192.168.0.18) at ~/mqtt-broker/
+# Joined to powerwall-dashboard_default network for container communication
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./data:/mosquitto/data
+      - ./log:/mosquitto/log
+
+networks:
+  default:
+    name: powerwall-dashboard_default
+    external: true
