@@ -18,6 +18,7 @@
             "type": "influxdb"
           },
           "query": "SHOW TAG VALUES FROM power WITH KEY = circuit WHERE type != 'main'",
+          "regex": "/^(?!circuit\\d)/",
           "includeAll": true,
           "allValue": "",
           "current": {
@@ -43,6 +44,7 @@
         "targets": [
           {
             "query": "SELECT last(\"power_w\") FROM \"power\" WHERE circuit = 'main_total' AND $timeFilter",
+            "alias": "Total",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -186,6 +188,7 @@
         "targets": [
           {
             "query": "SELECT last(\"voltage\") FROM \"power\" WHERE circuit = 'main_leg1' AND $timeFilter",
+            "alias": "Voltage",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -238,6 +241,7 @@
         "targets": [
           {
             "query": "SELECT last(\"power_w\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND $timeFilter GROUP BY circuit",
+            "alias": "$tag_circuit",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -305,6 +309,7 @@
         "targets": [
           {
             "query": "SELECT spread(\"energy_in_kwh\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND time > now() - 24h GROUP BY circuit",
+            "alias": "$tag_circuit",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -373,6 +378,7 @@
         "targets": [
           {
             "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND $timeFilter GROUP BY time($__interval), circuit fill(null)",
+            "alias": "$tag_circuit",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -428,6 +434,7 @@
         "targets": [
           {
             "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE circuit = 'main_total' AND $timeFilter GROUP BY time($__interval) fill(null)",
+            "alias": "Total Power",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
