@@ -1,0 +1,22 @@
+# SEM-meter MQTT consumer → InfluxDB writer
+# Deployed on RasPi5 (192.168.0.18)
+# Reads from Mosquitto MQTT, writes to InfluxDB sensors database
+
+services:
+  sem-consumer:
+    build: .
+    container_name: sem-consumer
+    restart: unless-stopped
+    environment:
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - MQTT_TOPIC=SEMMETER/+/HA
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_DATABASE=sensors
+      - INFLUXDB_MEASUREMENT=power
+      - LOG_LEVEL=INFO
+
+networks:
+  default:
+    name: powerwall-dashboard_default
+    external: true
