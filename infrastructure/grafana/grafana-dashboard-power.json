@@ -1,0 +1,528 @@
+{
+  "dashboard": {
+    "title": "Power Monitoring",
+    "uid": "power-monitoring",
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "circuit",
+          "type": "query",
+          "datasource": {
+            "uid": "nI9ZjC5Dz",
+            "type": "influxdb"
+          },
+          "query": "SHOW TAG VALUES FROM power WITH KEY = circuit WHERE type != 'main'",
+          "includeAll": true,
+          "allValue": "",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "multi": true,
+          "refresh": 2,
+          "sort": 1
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Total Power",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT last(\"power_w\") FROM \"power\" WHERE circuit = 'main_total' AND $timeFilter",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "watt",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "green", "value": 0 },
+                { "color": "yellow", "value": 5000 },
+                { "color": "red", "value": 10000 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Today's Energy",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT spread(\"energy_in_kwh\") FROM \"power\" WHERE circuit = 'main_total' AND time > now() - 24h",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "kwatth",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "green", "value": 0 },
+                { "color": "yellow", "value": 50 },
+                { "color": "red", "value": 100 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "auto"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Active Circuits",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT count(\"power_w\") FROM (SELECT last(\"power_w\") AS \"power_w\" FROM \"power\" WHERE type != 'main' AND time > now() - 30s GROUP BY circuit) WHERE \"power_w\" > 1",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "blue", "value": null }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "auto"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Voltage (L1)",
+        "type": "stat",
+        "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT last(\"voltage\") FROM \"power\" WHERE circuit = 'main_leg1' AND $timeFilter",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "volt",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "red", "value": null },
+                { "color": "red", "value": 0 },
+                { "color": "yellow", "value": 110 },
+                { "color": "green", "value": 118 },
+                { "color": "yellow", "value": 125 },
+                { "color": "red", "value": 130 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Active Now",
+        "description": "Current power draw per circuit, sorted by usage",
+        "type": "bargauge",
+        "gridPos": { "h": 10, "w": 12, "x": 0, "y": 4 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT last(\"power_w\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND $timeFilter GROUP BY circuit",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "watt",
+            "decimals": 0,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "text", "value": null },
+                { "color": "green", "value": 1 },
+                { "color": "yellow", "value": 1000 },
+                { "color": "orange", "value": 2000 },
+                { "color": "red", "value": 3000 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "minVizWidth": 0,
+          "minVizHeight": 10,
+          "valueMode": "text",
+          "namePlacement": "left"
+        },
+        "transformations": [
+          {
+            "id": "sortBy",
+            "options": {
+              "sort": [
+                {
+                  "field": "last",
+                  "desc": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Top Consumers (24h)",
+        "description": "Energy consumed per circuit over the last 24 hours",
+        "type": "bargauge",
+        "gridPos": { "h": 10, "w": 12, "x": 12, "y": 4 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT spread(\"energy_in_kwh\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND time > now() - 24h GROUP BY circuit",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "kwatth",
+            "decimals": 1,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "text", "value": null },
+                { "color": "super-light-blue", "value": 0.001 },
+                { "color": "blue", "value": 1 },
+                { "color": "purple", "value": 5 },
+                { "color": "orange", "value": 10 },
+                { "color": "red", "value": 20 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "minVizWidth": 0,
+          "minVizHeight": 10,
+          "valueMode": "text",
+          "namePlacement": "left"
+        },
+        "transformations": [
+          {
+            "id": "sortBy",
+            "options": {
+              "sort": [
+                {
+                  "field": "spread",
+                  "desc": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Power by Circuit",
+        "description": "Stacked area - power draw over time",
+        "type": "timeseries",
+        "gridPos": { "h": 12, "w": 24, "x": 0, "y": 14 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND $timeFilter GROUP BY time($__interval), circuit fill(null)",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "watt",
+            "decimals": 0,
+            "custom": {
+              "lineWidth": 1,
+              "fillOpacity": 60,
+              "pointSize": 5,
+              "showPoints": "never",
+              "spanNulls": true,
+              "drawStyle": "line",
+              "gradientMode": "opacity",
+              "stacking": {
+                "mode": "normal",
+                "group": "A"
+              }
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom",
+            "calcs": ["lastNotNull", "mean", "max"],
+            "sortBy": "Last *",
+            "sortDesc": true
+          },
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Total Power Timeline",
+        "description": "Main total power draw over time",
+        "type": "timeseries",
+        "gridPos": { "h": 8, "w": 16, "x": 0, "y": 26 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE circuit = 'main_total' AND $timeFilter GROUP BY time($__interval) fill(null)",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "watt",
+            "decimals": 0,
+            "custom": {
+              "lineWidth": 2,
+              "fillOpacity": 20,
+              "pointSize": 5,
+              "showPoints": "never",
+              "spanNulls": true,
+              "drawStyle": "line",
+              "gradientMode": "scheme"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 5000 },
+                { "color": "red", "value": 10000 }
+              ]
+            },
+            "color": {
+              "mode": "continuous-GrYlRd"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Daily Energy",
+        "description": "Total kWh per day",
+        "type": "barchart",
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 26 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT spread(\"energy_in_kwh\") AS \"kWh\" FROM \"power\" WHERE circuit = 'main_total' AND time > now() - 7d GROUP BY time(1d) fill(0)",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "kwatth",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 50 },
+                { "color": "red", "value": 100 }
+              ]
+            },
+            "color": {
+              "mode": "continuous-blues"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "orientation": "auto",
+          "showValue": "always",
+          "barWidth": 0.7,
+          "groupWidth": 0.7,
+          "stacking": "none",
+          "legend": {
+            "displayMode": "hidden"
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        }
+      }
+    ],
+    "schemaVersion": 36,
+    "version": 0
+  },
+  "overwrite": true
+}
