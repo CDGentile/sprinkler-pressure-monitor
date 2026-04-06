@@ -53,7 +53,7 @@
         "id": 1,
         "title": "Current Pressure by Sensor",
         "type": "stat",
-        "gridPos": { "h": 6, "w": 24, "x": 0, "y": 0 },
+        "gridPos": { "h": 6, "w": 18, "x": 0, "y": 0 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
@@ -61,6 +61,7 @@
         "targets": [
           {
             "query": "SELECT last(\"value\") FROM \"pressure\" WHERE location =~ /^$location$/ AND sensor =~ /^$sensor$/ AND $timeFilter GROUP BY sensor",
+            "alias": "$tag_sensor",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -101,6 +102,73 @@
         }
       },
       {
+        "id": 7,
+        "title": "Pump Status",
+        "type": "stat",
+        "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT last(\"power_w\") FROM \"power\" WHERE (circuit = 'new_pump' OR circuit = 'old_pump') AND $timeFilter GROUP BY circuit",
+            "alias": "$tag_circuit",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "watt",
+            "decimals": 0,
+            "mappings": [
+              {
+                "type": "range",
+                "options": {
+                  "from": 0,
+                  "to": 10,
+                  "result": { "text": "OFF", "color": "text", "index": 0 }
+                }
+              },
+              {
+                "type": "range",
+                "options": {
+                  "from": 10,
+                  "to": 999999,
+                  "result": { "index": 1 }
+                }
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "text", "value": null },
+                { "color": "orange", "value": 10 },
+                { "color": "red", "value": 2000 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "orientation": "vertical",
+          "textMode": "auto",
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "center"
+        }
+      },
+      {
         "id": 2,
         "title": "Pressure Timeline",
         "type": "timeseries",
@@ -112,9 +180,17 @@
         "targets": [
           {
             "query": "SELECT mean(\"value\") FROM \"pressure\" WHERE location =~ /^$location$/ AND sensor =~ /^$sensor$/ AND $timeFilter GROUP BY time($__interval), sensor fill(null)",
+            "alias": "$tag_sensor",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
+          },
+          {
+            "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE (circuit = 'new_pump' OR circuit = 'old_pump') AND $timeFilter GROUP BY time($__interval), circuit fill(null)",
+            "alias": "$tag_circuit",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "B"
           }
         ],
         "fieldConfig": {
@@ -126,7 +202,8 @@
               "fillOpacity": 10,
               "pointSize": 5,
               "showPoints": "never",
-              "spanNulls": true
+              "spanNulls": true,
+              "axisPlacement": "auto"
             },
             "thresholds": {
               "mode": "absolute",
@@ -138,7 +215,20 @@
               "mode": "palette-classic"
             }
           },
-          "overrides": []
+          "overrides": [
+            {
+              "matcher": { "id": "byRegexp", "options": "new_pump|old_pump" },
+              "properties": [
+                { "id": "unit", "value": "watt" },
+                { "id": "custom.axisPlacement", "value": "right" },
+                { "id": "custom.axisLabel", "value": "Pump Power (W)" },
+                { "id": "custom.lineStyle", "value": { "fill": "dash", "dash": [10, 5] } },
+                { "id": "custom.lineWidth", "value": 1 },
+                { "id": "custom.fillOpacity", "value": 5 },
+                { "id": "decimals", "value": 0 }
+              ]
+            }
+          ]
         },
         "options": {
           "legend": {
