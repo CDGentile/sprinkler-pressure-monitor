@@ -51,26 +51,35 @@
     "panels": [
       {
         "id": 1,
-        "title": "Current Pressure by Sensor",
-        "type": "stat",
-        "gridPos": { "h": 6, "w": 18, "x": 0, "y": 0 },
+        "title": "House Pressure",
+        "type": "gauge",
+        "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
         },
         "targets": [
           {
-            "query": "SELECT last(\"value\") FROM \"pressure\" WHERE location =~ /^$location$/ AND sensor =~ /^$sensor$/ AND $timeFilter GROUP BY sensor",
-            "alias": "$tag_sensor",
+            "query": "SELECT last(\"value\") FROM \"pressure\" WHERE sensor = 'house_branch' AND $timeFilter",
+            "alias": "house_branch",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
+          },
+          {
+            "query": "SELECT last(\"value\") FROM \"pressure\" WHERE sensor = 'house_filter_inlet' AND $timeFilter",
+            "alias": "house_filter_inlet",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "B"
           }
         ],
         "fieldConfig": {
           "defaults": {
             "unit": "psi",
             "decimals": 1,
+            "min": 0,
+            "max": 100,
             "thresholds": {
               "mode": "absolute",
               "steps": [
@@ -86,7 +95,22 @@
               "mode": "thresholds"
             }
           },
-          "overrides": []
+          "overrides": [
+            {
+              "matcher": { "id": "byName", "options": "house_branch" },
+              "properties": [
+                { "id": "displayName", "value": "House Branch" }
+              ]
+            },
+            {
+              "matcher": { "id": "byName", "options": "house_filter_inlet" },
+              "properties": [
+                { "id": "displayName", "value": "Filter Inlet" },
+                { "id": "color", "value": { "mode": "fixed", "fixedColor": "light-blue" } },
+                { "id": "custom.neutral", "value": 0 }
+              ]
+            }
+          ]
         },
         "options": {
           "reduceOptions": {
@@ -95,17 +119,19 @@
             "values": false
           },
           "orientation": "auto",
-          "textMode": "auto",
-          "colorMode": "background",
-          "graphMode": "area",
-          "justifyMode": "auto"
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true,
+          "text": {
+            "titleSize": 14,
+            "valueSize": 36
+          }
         }
       },
       {
         "id": 7,
         "title": "Pump Status",
         "type": "stat",
-        "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 },
+        "gridPos": { "h": 4, "w": 6, "x": 8, "y": 0 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
@@ -172,7 +198,7 @@
         "id": 2,
         "title": "Pressure Timeline",
         "type": "timeseries",
-        "gridPos": { "h": 12, "w": 24, "x": 0, "y": 6 },
+        "gridPos": { "h": 12, "w": 24, "x": 0, "y": 8 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
@@ -246,7 +272,7 @@
         "id": 3,
         "title": "Pressure by Location (24h)",
         "type": "table",
-        "gridPos": { "h": 8, "w": 16, "x": 0, "y": 18 },
+        "gridPos": { "h": 8, "w": 16, "x": 0, "y": 20 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
@@ -312,7 +338,7 @@
         "id": 4,
         "title": "Status Overview",
         "type": "stat",
-        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 18 },
+        "gridPos": { "h": 8, "w": 8, "x": 16, "y": 20 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
@@ -359,7 +385,7 @@
         "id": 5,
         "title": "System Stability",
         "type": "stat",
-        "gridPos": { "h": 4, "w": 12, "x": 0, "y": 26 },
+        "gridPos": { "h": 4, "w": 12, "x": 0, "y": 28 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
@@ -408,7 +434,7 @@
         "id": 6,
         "title": "Stability Timeline",
         "type": "timeseries",
-        "gridPos": { "h": 4, "w": 12, "x": 12, "y": 26 },
+        "gridPos": { "h": 4, "w": 12, "x": 12, "y": 28 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
@@ -462,7 +488,7 @@
         "title": "Filter Pressure Drop (24h max)",
         "description": "Highest pressure difference across water filter in last 24 hours (inlet minus outlet)",
         "type": "gauge",
-        "gridPos": { "h": 6, "w": 6, "x": 9, "y": 30 },
+        "gridPos": { "h": 4, "w": 6, "x": 8, "y": 4 },
         "datasource": {
           "uid": "nI9ZjC5Dz",
           "type": "influxdb"
