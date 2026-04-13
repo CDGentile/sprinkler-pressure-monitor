@@ -456,6 +456,80 @@
             "mode": "multi"
           }
         }
+      },
+      {
+        "id": 8,
+        "title": "Filter Pressure Drop (24h max)",
+        "description": "Highest pressure difference across water filter in last 24 hours (inlet minus outlet)",
+        "type": "gauge",
+        "gridPos": { "h": 6, "w": 6, "x": 9, "y": 30 },
+        "datasource": {
+          "uid": "nI9ZjC5Dz",
+          "type": "influxdb"
+        },
+        "targets": [
+          {
+            "query": "SELECT mean(\"value\") FROM \"pressure\" WHERE sensor = 'house_filter_inlet' AND time > now() - 24h GROUP BY time(10s) fill(null)",
+            "alias": "inlet",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "A"
+          },
+          {
+            "query": "SELECT mean(\"value\") FROM \"pressure\" WHERE sensor = 'house_branch' AND time > now() - 24h GROUP BY time(10s) fill(null)",
+            "alias": "outlet",
+            "rawQuery": true,
+            "resultFormat": "time_series",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "psi",
+            "decimals": 1,
+            "min": 0,
+            "max": 30,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "green", "value": 0 },
+                { "color": "yellow", "value": 10 },
+                { "color": "orange", "value": 15 },
+                { "color": "red", "value": 20 }
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "reduceOptions": {
+            "calcs": ["max"],
+            "fields": "/drop/",
+            "values": false
+          },
+          "orientation": "auto",
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "transformations": [
+          {
+            "id": "calculateField",
+            "options": {
+              "mode": "binary",
+              "binary": {
+                "left": "inlet",
+                "operator": "-",
+                "right": "outlet"
+              },
+              "alias": "drop",
+              "replaceFields": true
+            }
+          }
+        ]
       }
     ],
     "schemaVersion": 36,
