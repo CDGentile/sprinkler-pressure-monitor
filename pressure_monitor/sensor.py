@@ -61,13 +61,17 @@ class SensorManager:
     def read_all(self):
         readings = []
         for ch in self.enabled_channels:
-            voltage = self.read_adc_channel(ch)  # Placeholder
-            max_voltage = self.channel_configs[ch]["max_voltage"]
-            max_value = self.channel_configs[ch]["max_value"]
-            name = self.channel_configs[ch]["name"]
+            voltage = self.read_adc_channel(ch)
+            cfg = self.channel_configs[ch]
+            min_voltage = cfg.get("min_voltage", 0.5)
+            max_voltage = cfg["max_voltage"]
+            max_value = cfg["max_value"]
+            name = cfg["name"]
 
-            # Normalize reading
-            value = (voltage / max_voltage) * max_value
+            # Scale voltage to value using sensor's linear range
+            # Typical 3-wire transducer: 0.5V = 0 PSI, 4.5V = max PSI
+            clamped = max(min_voltage, min(voltage, max_voltage))
+            value = ((clamped - min_voltage) / (max_voltage - min_voltage)) * max_value
             readings.append({"name": name, "value": value})
 
         return readings

@@ -14,13 +14,15 @@ def mock_config():
                 "0": {
                     "enabled": True,
                     "name": "house_branch",
-                    "max_voltage": 5.0,
+                    "min_voltage": 0.5,
+                    "max_voltage": 4.5,
                     "max_value": 100.0
                 },
                 "1": {
                     "enabled": False,
                     "name": "unused_sensor",
-                    "max_voltage": 5.0,
+                    "min_voltage": 0.5,
+                    "max_voltage": 4.5,
                     "max_value": 100.0
                 }
             }
@@ -73,7 +75,8 @@ def test_load_config_for_specific_site():
                         "0": {
                             "enabled": True,
                             "name": "house_branch",
-                            "max_voltage": 5.0,
+                            "min_voltage": 0.5,
+                    "max_voltage": 4.5,
                             "max_value": 100.0
                         }
                     }
@@ -85,7 +88,8 @@ def test_load_config_for_specific_site():
                         "1": {
                             "enabled": True,
                             "name": "shop_well",
-                            "max_voltage": 5.0,
+                            "min_voltage": 0.5,
+                    "max_voltage": 4.5,
                             "max_value": 100.0
                         }
                     }

@@ -13,7 +13,8 @@ sites:
         0:
           enabled: true
           name: house_branch
-          max_voltage: 5.0
+          min_voltage: 0.5
+          max_voltage: 4.5
           max_value: 100.0
           calibration_offset: 0.0
           min_valid_value: 0.0
@@ -27,7 +28,8 @@ sites:
         0:
           enabled: true
           name: main_well
-          max_voltage: 5.0
+          min_voltage: 0.5
+          max_voltage: 4.5
           max_value: 100.0
           calibration_offset: 0.0
           min_valid_value: 0.0
@@ -35,7 +37,8 @@ sites:
         1:
           enabled: false
           name: shop_well
-          max_voltage: 5.0
+          min_voltage: 0.5
+          max_voltage: 4.5
           max_value: 100.0
           calibration_offset: 0.0
           min_valid_value: 0.0
@@ -43,7 +46,8 @@ sites:
         2:
           enabled: true
           name: irrigation_branch
-          max_voltage: 5.0
+          min_voltage: 0.5
+          max_voltage: 4.5
           max_value: 100.0
           calibration_offset: 0.0
           min_valid_value: 0.0
@@ -51,7 +55,8 @@ sites:
         3:
           enabled: true
           name: runway_well
-          max_voltage: 5.0
+          min_voltage: 0.5
+          max_voltage: 4.5
           max_value: 100.0
           calibration_offset: 0.0
           min_valid_value: 0.0
