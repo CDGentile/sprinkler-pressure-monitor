@@ -72,6 +72,7 @@ class SensorManager:
             # Typical 3-wire transducer: 0.5V = 0 PSI, 4.5V = max PSI
             clamped = max(min_voltage, min(voltage, max_voltage))
             value = ((clamped - min_voltage) / (max_voltage - min_voltage)) * max_value
+            value += cfg.get("calibration_offset", 0.0)
             readings.append({"name": name, "value": value})
 
         return readings

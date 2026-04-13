@@ -25,7 +25,7 @@ sites:
           min_voltage: 0.5
           max_voltage: 4.5
           max_value: 100.0
-          calibration_offset: 0.0
+          calibration_offset: 3.0
           min_valid_value: 0.0
           max_valid_value: 120.0
 
