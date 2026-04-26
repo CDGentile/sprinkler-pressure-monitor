@@ -3,9 +3,9 @@
 # Collects host metrics via mounted /proc, /sys, /etc
 
 services:
-  telegraf:
+  telegraf-system:
     image: telegraf:1.30-alpine
-    container_name: telegraf
+    container_name: telegraf-system
     restart: unless-stopped
     environment:
       - HOST_PROC=/hostfs/proc
