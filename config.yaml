@@ -44,7 +44,7 @@ sites:
           min_valid_value: 0.0
           max_valid_value: 120.0
         1:
-          enabled: false
+          enabled: true
           name: shop_well
           min_voltage: 0.5
           max_voltage: 4.5
