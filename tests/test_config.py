@@ -34,7 +34,7 @@ VALID_CONFIG = {
             }
         }
     },
-    "sampling": {"high_rate_hz": 10, "low_rate_hz": 0.2},
+    "sampling": {"rate_hz": 0.5, "channel_offset_ms": 250},
     "simulation": {"sensor": True, "output": True},
     "mqtt": {"enabled": True, "host": "localhost"}
 }

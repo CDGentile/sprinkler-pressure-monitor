@@ -58,23 +58,34 @@ class SensorManager:
                 self.ads = None
                 self.analog_inputs = {}
 
+    def read_channel(self, ch):
+        """Read and scale a single channel. Returns {"name": ..., "value": ...}."""
+        voltage = self.read_adc_channel(ch)
+        cfg = self.channel_configs[ch]
+        min_voltage = cfg.get("min_voltage", 0.5)
+        max_voltage = cfg["max_voltage"]
+        max_value = cfg["max_value"]
+        name = cfg["name"]
+
+        # Scale voltage to value using sensor's linear range
+        # Typical 3-wire transducer: 0.5V = 0 PSI, 4.5V = max PSI
+        clamped = max(min_voltage, min(voltage, max_voltage))
+        value = ((clamped - min_voltage) / (max_voltage - min_voltage)) * max_value
+        value += cfg.get("calibration_offset", 0.0)
+        return {"name": name, "value": value}
+
     def read_all(self):
+        """Read all enabled channels sequentially with no delay."""
+        return [self.read_channel(ch) for ch in self.enabled_channels]
+
+    def read_all_staggered(self, offset_sec):
+        """Read all enabled channels with a delay between each to avoid crosstalk."""
+        import time
         readings = []
-        for ch in self.enabled_channels:
-            voltage = self.read_adc_channel(ch)
-            cfg = self.channel_configs[ch]
-            min_voltage = cfg.get("min_voltage", 0.5)
-            max_voltage = cfg["max_voltage"]
-            max_value = cfg["max_value"]
-            name = cfg["name"]
-
-            # Scale voltage to value using sensor's linear range
-            # Typical 3-wire transducer: 0.5V = 0 PSI, 4.5V = max PSI
-            clamped = max(min_voltage, min(voltage, max_voltage))
-            value = ((clamped - min_voltage) / (max_voltage - min_voltage)) * max_value
-            value += cfg.get("calibration_offset", 0.0)
-            readings.append({"name": name, "value": value})
-
+        for i, ch in enumerate(self.enabled_channels):
+            if i > 0:
+                time.sleep(offset_sec)
+            readings.append(self.read_channel(ch))
         return readings
 
     def read_adc_channel(self, ch):

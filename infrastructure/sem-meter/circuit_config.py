@@ -4,7 +4,7 @@
 
 CIRCUITS = {
     0:  {"name": "old_outlet",      "type": "120v", "voltage_scale": 0.1,  "current_scale": 0.01, "power_scale": 0.01,  "energy_scale": 0.001},
-    1:  {"name": "heater",          "type": "120v", "voltage_scale": 0.1,  "current_scale": 0.01, "power_scale": 0.01,  "energy_scale": 0.001},
+    1:  {"name": "heater",          "type": "240v", "voltage_scale": 0.2,  "current_scale": 0.01, "power_scale": 0.02,  "energy_scale": 0.002},
     2:  {"name": "old_pump",        "type": "240v", "voltage_scale": 0.2,  "current_scale": 0.01, "power_scale": 0.02,  "energy_scale": 0.002},
     3:  {"name": "timer_outlet",    "type": "120v", "voltage_scale": 0.1,  "current_scale": 0.01, "power_scale": 0.01,  "energy_scale": 0.001},
     4:  {"name": "gfci_network",    "type": "120v", "voltage_scale": 0.1,  "current_scale": 0.01, "power_scale": 0.01,  "energy_scale": 0.001},

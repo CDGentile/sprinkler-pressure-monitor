@@ -73,10 +73,8 @@ sites:
 
 # Sampling configuration
 sampling:
-  high_rate_hz: 4.0       # Rate when pressure is changing
-  low_rate_hz: 0.2        # Rate when pressure is stable (1 sample every 5 sec)
-  stability_threshold_pct: 5.0
-  stability_window_sec: 5
+  rate_hz: 0.5              # Fixed sample rate (once every 2 seconds)
+  channel_offset_ms: 250    # Delay between channel reads to avoid ADC crosstalk
 
 # Simulation mode - for testing without hardware
 simulation:

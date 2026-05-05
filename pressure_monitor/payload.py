@@ -1,6 +1,6 @@
 import time
 
-def build_payload(readings, stable=False):
+def build_payload(readings):
     payloads = []
     ts = time.time()
     for r in readings:
@@ -8,7 +8,6 @@ def build_payload(readings, stable=False):
             "timestamp": ts,
             "name": r["name"],
             "value": r["value"],
-            "stable": stable,
             "status": {"ok": True, "note": "stub"}
         })
     return payloads
