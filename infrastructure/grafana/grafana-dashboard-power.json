@@ -11,13 +11,29 @@
     "templating": {
       "list": [
         {
+          "name": "device",
+          "type": "custom",
+          "label": "Meter",
+          "query": "Pump House : A085E3FD6EA6,Hobbit : 1CDBD4423A6E",
+          "includeAll": false,
+          "multi": false,
+          "current": {
+            "text": "Pump House",
+            "value": "A085E3FD6EA6"
+          },
+          "options": [
+            { "text": "Pump House", "value": "A085E3FD6EA6", "selected": true },
+            { "text": "Hobbit", "value": "1CDBD4423A6E", "selected": false }
+          ]
+        },
+        {
           "name": "circuit",
           "type": "query",
           "datasource": {
             "uid": "nI9ZjC5Dz",
             "type": "influxdb"
           },
-          "query": "SHOW TAG VALUES FROM power WITH KEY = circuit WHERE type != 'main'",
+          "query": "SHOW TAG VALUES FROM power WITH KEY = circuit WHERE type != 'main' AND device = '$device'",
           "regex": "/^(?!circuit\\d)/",
           "includeAll": true,
           "allValue": "",
@@ -43,7 +59,7 @@
         },
         "targets": [
           {
-            "query": "SELECT last(\"power_w\") FROM \"power\" WHERE circuit = 'main_total' AND $timeFilter",
+            "query": "SELECT last(\"power_w\") FROM \"power\" WHERE circuit = 'main_total' AND device = '$device' AND $timeFilter",
             "alias": "Total",
             "rawQuery": true,
             "resultFormat": "time_series",
@@ -93,7 +109,7 @@
         },
         "targets": [
           {
-            "query": "SELECT spread(\"energy_in_kwh\") FROM \"power\" WHERE circuit = 'main_total' AND time > now() - 24h",
+            "query": "SELECT spread(\"energy_in_kwh\") FROM \"power\" WHERE circuit = 'main_total' AND device = '$device' AND time > now() - 24h",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -142,7 +158,7 @@
         },
         "targets": [
           {
-            "query": "SELECT count(\"power_w\") FROM (SELECT last(\"power_w\") AS \"power_w\" FROM \"power\" WHERE type != 'main' AND time > now() - 30s GROUP BY circuit) WHERE \"power_w\" > 1",
+            "query": "SELECT count(\"power_w\") FROM (SELECT last(\"power_w\") AS \"power_w\" FROM \"power\" WHERE type != 'main' AND device = '$device' AND time > now() - 30s GROUP BY circuit) WHERE \"power_w\" > 1",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -187,7 +203,7 @@
         },
         "targets": [
           {
-            "query": "SELECT last(\"voltage\") FROM \"power\" WHERE circuit = 'main_leg1' AND $timeFilter",
+            "query": "SELECT last(\"voltage\") FROM \"power\" WHERE circuit = 'main_leg1' AND device = '$device' AND $timeFilter",
             "alias": "Voltage",
             "rawQuery": true,
             "resultFormat": "time_series",
@@ -240,7 +256,7 @@
         },
         "targets": [
           {
-            "query": "SELECT last(\"power_w\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND $timeFilter GROUP BY circuit",
+            "query": "SELECT last(\"power_w\") FROM \"power\" WHERE type != 'main' AND device = '$device' AND circuit =~ /^$circuit$/ AND $timeFilter GROUP BY circuit",
             "alias": "$tag_circuit",
             "rawQuery": true,
             "resultFormat": "time_series",
@@ -308,7 +324,7 @@
         },
         "targets": [
           {
-            "query": "SELECT spread(\"energy_in_kwh\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND time > now() - 24h GROUP BY circuit",
+            "query": "SELECT spread(\"energy_in_kwh\") FROM \"power\" WHERE type != 'main' AND device = '$device' AND circuit =~ /^$circuit$/ AND time > now() - 24h GROUP BY circuit",
             "alias": "$tag_circuit",
             "rawQuery": true,
             "resultFormat": "time_series",
@@ -377,7 +393,7 @@
         },
         "targets": [
           {
-            "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE type != 'main' AND circuit =~ /^$circuit$/ AND $timeFilter GROUP BY time($__interval), circuit fill(null)",
+            "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE type != 'main' AND device = '$device' AND circuit =~ /^$circuit$/ AND $timeFilter GROUP BY time($__interval), circuit fill(null)",
             "alias": "$tag_circuit",
             "rawQuery": true,
             "resultFormat": "time_series",
@@ -433,7 +449,7 @@
         },
         "targets": [
           {
-            "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE circuit = 'main_total' AND $timeFilter GROUP BY time($__interval) fill(null)",
+            "query": "SELECT mean(\"power_w\") FROM \"power\" WHERE circuit = 'main_total' AND device = '$device' AND $timeFilter GROUP BY time($__interval) fill(null)",
             "alias": "Total Power",
             "rawQuery": true,
             "resultFormat": "time_series",
@@ -489,7 +505,7 @@
         },
         "targets": [
           {
-            "query": "SELECT spread(\"energy_in_kwh\") AS \"kWh\" FROM \"power\" WHERE circuit = 'main_total' AND time > now() - 7d GROUP BY time(1d) fill(0)",
+            "query": "SELECT spread(\"energy_in_kwh\") AS \"kWh\" FROM \"power\" WHERE circuit = 'main_total' AND device = '$device' AND time > now() - 7d GROUP BY time(1d) fill(0)",
             "rawQuery": true,
             "resultFormat": "time_series",
             "refId": "A"
@@ -529,7 +545,7 @@
       }
     ],
     "schemaVersion": 36,
-    "version": 0
+    "version": 1
   },
   "overwrite": true
 }

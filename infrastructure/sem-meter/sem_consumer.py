@@ -17,7 +17,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-from circuit_config import CIRCUITS, MAIN_LEGS
+from circuit_config import DEVICE_CIRCUITS, DEVICE_MAIN_LEGS
 
 logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO").upper(),
@@ -56,9 +56,8 @@ signal.signal(signal.SIGTERM, shutdown)
 signal.signal(signal.SIGINT, shutdown)
 
 
-def scale_circuit(index, raw):
-    """Apply scaling factors to raw sense values for a given circuit index."""
-    cfg = CIRCUITS[index]
+def scale_circuit(cfg, raw):
+    """Apply a circuit's scaling factors to its raw sense values."""
     return {
         "voltage": round(raw[0] * cfg["voltage_scale"], 1),
         "current": round(raw[1] * cfg["current_scale"], 2),
@@ -66,11 +65,6 @@ def scale_circuit(index, raw):
         "energy_in_kwh": round(raw[3] * cfg["energy_scale"], 3),
         "energy_out_kwh": round(raw[4] * cfg["energy_scale"], 3),
     }
-
-
-def build_line_protocol(device_id, timestamp_s):
-    """Called by on_message after parsing; returns None. Actual work is in on_message."""
-    pass  # placeholder — logic is in on_message directly
 
 
 def on_connect(client, userdata, flags, rc):
@@ -98,19 +92,27 @@ def on_message(client, userdata, msg):
     topic_parts = msg.topic.split("/")
     device_id = topic_parts[1] if len(topic_parts) >= 2 else "unknown"
 
+    # Resolve this device's circuit map. An unrecognized meter would otherwise
+    # be scaled/named with the wrong device's mapping, so skip it and warn.
+    circuits = DEVICE_CIRCUITS.get(device_id)
+    if circuits is None:
+        log.warning(f"Unknown device '{device_id}', no circuit map configured, skipping")
+        return
+    main_legs = DEVICE_MAIN_LEGS.get(device_id, [])
+
     timestamp_s = int(time.time())
     lines = []
 
     # Process individual circuits
     for idx, raw in enumerate(sense):
-        if idx not in CIRCUITS:
+        if idx not in circuits:
             continue
         if len(raw) < 5:
             log.warning(f"Circuit {idx} has {len(raw)} values, expected 5, skipping")
             continue
 
-        cfg = CIRCUITS[idx]
-        scaled = scale_circuit(idx, raw)
+        cfg = circuits[idx]
+        scaled = scale_circuit(cfg, raw)
 
         # Escape tag values (no spaces/commas in our names, but be safe)
         circuit_name = cfg["name"]
@@ -138,9 +140,9 @@ def on_message(client, userdata, msg):
     main_energy_in = 0.0
     main_energy_out = 0.0
 
-    for idx in MAIN_LEGS:
+    for idx in main_legs:
         if idx < len(sense) and len(sense[idx]) >= 5:
-            scaled = scale_circuit(idx, sense[idx])
+            scaled = scale_circuit(circuits[idx], sense[idx])
             main_current += scaled["current"]
             main_power += scaled["power_w"]
             main_energy_in += scaled["energy_in_kwh"]
@@ -178,7 +180,10 @@ def main():
     log.info("SEM-meter consumer starting")
     log.info(f"MQTT: {MQTT_HOST}:{MQTT_PORT} topic={MQTT_TOPIC}")
     log.info(f"InfluxDB: {write_url}")
-    log.info(f"Circuits configured: {len(CIRCUITS)} + main_total")
+    device_summary = ", ".join(
+        f"{dev} ({len(circuits)} circuits)" for dev, circuits in DEVICE_CIRCUITS.items()
+    )
+    log.info(f"Devices configured: {device_summary}")
 
     client = mqtt.Client(client_id="sem-consumer")
     client.on_connect = on_connect
